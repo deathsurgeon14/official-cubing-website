@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Mark as Paid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #12172B;
+    --paper: #F6F4EF;
+    --paper-dim: #EAE7DD;
+    --cube-red: #E6402A;
+    --cube-green: #1E8E5A;
+    --cube-amber: #B7791F;
+    --line: #D9D5C8;
+    --text-dim: #6B7280;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; padding: 30px 20px; }
+  .wrap { max-width: 1150px; margin: 0 auto; }
+  header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  h1 { font-family: 'Space Grotesk', sans-serif; font-size: 26px; }
+  .back-link { color: var(--text-dim); text-decoration: none; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .back-link:hover { color: var(--ink); }
+
+  /* DIAGNOSTICS */
+  .diag {
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 16px;
+    border: 1px solid var(--line); background: #fff;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.7;
+  }
+  .diag.ok    { border-color: rgba(30,142,90,0.45);  background: rgba(30,142,90,0.06); }
+  .diag.warn  { border-color: rgba(183,121,31,0.45); background: rgba(183,121,31,0.07); }
+  .diag.fail  { border-color: rgba(230,64,42,0.45);  background: rgba(230,64,42,0.07); }
+  .diag-head { display:flex; justify-content:space-between; align-items:center; gap:12px; cursor:pointer; }
+  .diag-title { font-family:'Space Grotesk',sans-serif; font-size:14px; }
+  .diag-body { margin-top:10px; border-top:1px dashed var(--line); padding-top:10px; }
+  .diag-body[hidden] { display:none; }
+  .diag-row { display:flex; gap:10px; }
+  .diag-k { color: var(--text-dim); min-width: 190px; flex-shrink:0; }
+  .diag-v { word-break: break-word; }
+
+  .summary-card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:20px; }
+  .summary-title { font-family:'Space Grotesk',sans-serif; font-size:16px; margin-bottom:12px; }
+  .totals-row { display:flex; gap:32px; margin-bottom:20px; flex-wrap:wrap; }
+  .total-stat-box { display:flex; flex-direction:column; }
+  .total-stat-label { font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px; }
+  .total-stat-count, .total-stat-potential { font-family:'Space Grotesk',sans-serif; font-size:26px; color:var(--ink); }
+  .total-stat { font-family:'Space Grotesk',sans-serif; font-size:26px; color:var(--cube-green); }
+  .event-stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+  .event-stat-item { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+  .event-stat-name { font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px; }
+  .event-stat-val { font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:15px; }
+  .event-stat-sub { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--cube-green); margin-top:2px; }
+
+  .filter-card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:20px;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; align-items:end; }
+  .filter-group { display:flex; flex-direction:column; gap:6px; }
+  .filter-group label { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-dim); }
+  .filter-control { width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--line); background:var(--paper);
+    font-family:'Inter',sans-serif; font-size:13.5px; color:var(--ink); outline:none; transition:border-color .15s; }
+  .filter-control:focus { border-color:var(--ink); }
+
+  .actions-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; flex-wrap:wrap; }
+  .actions-left { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; color:var(--text-dim);
+    padding:10px; border-bottom:1px solid var(--line); background:var(--paper-dim); text-align:left; }
+  td { padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tr.unsynced td { background: rgba(183,121,31,0.06); }
+
+  .badge { display:inline-block; padding:3px 8px; border-radius:999px; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; }
+  .badge-paid { background:rgba(30,142,90,0.15); color:var(--cube-green); }
+  .badge-pending { background:rgba(230,64,42,0.15); color:var(--cube-red); }
+  .badge-grade { background:rgba(18,23,43,0.08); color:var(--ink); }
+  .sync-note { display:block; margin-top:4px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--cube-amber); }
+
+  .amount-tag { font-family:'IBM Plex Mono',monospace; font-weight:600; }
+
+  .btn { padding:6px 12px; border-radius:6px; border:none; font-size:12px; font-weight:600; cursor:pointer;
+    font-family:'IBM Plex Mono',monospace; transition:opacity .15s ease; }
+  .btn:hover:not(:disabled) { opacity:.85; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-pay { background:var(--cube-green); color:#fff; }
+  .btn-unpay { background:var(--text-dim); color:#fff; }
+  .btn-done { background:var(--paper-dim); color:var(--text-dim); border:1px solid var(--line); }
+  .btn-refresh { background:var(--ink); color:#fff; padding:8px 16px; border-radius:999px; }
+  .btn-retry { background:var(--cube-amber); color:#fff; padding:8px 16px; border-radius:999px; }
+  .btn-clear { background:#fff; color:var(--cube-red); border:1px solid rgba(230,64,42,0.45); padding:8px 16px; border-radius:999px; }
+
+  .result-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+    background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 16px; margin-bottom:16px; }
+  .result-count { font-family:'Space Grotesk',sans-serif; font-size:18px; }
+  .result-count b { font-size:22px; }
+  .result-meta { display:flex; gap:16px; flex-wrap:wrap; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); }
+  .result-meta .paid { color:var(--cube-green); font-weight:600; }
+  .result-meta .pending { color:var(--cube-red); font-weight:600; }
+  .btn-reset { background:transparent; color:var(--text-dim); border:1px solid var(--line); padding:5px 12px; border-radius:999px; }
+
+  .toggle-wrap { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Registrations &amp; Payment Status</h1>
+    <a href="admin_home.html" class="back-link">&larr; Back to Home</a>
+  </header>
+
+  <!-- DIAGNOSTICS -->
+  <div class="diag" id="diagCard">
+    <div class="diag-head" onclick="toggleDiag()">
+      <span class="diag-title" id="diagHeadline">Checking connection to the sheet...</span>
+      <span style="color:var(--text-dim);" id="diagCaret">show details ▾</span>
+    </div>
+    <div class="diag-body" id="diagBody" hidden>
+      <div class="diag-row"><span class="diag-k">GET endpoint</span><span class="diag-v" id="dGet">—</span></div>
+      <div class="diag-row"><span class="diag-k">Response shape</span><span class="diag-v" id="dShape">—</span></div>
+      <div class="diag-row"><span class="diag-k">Rows returned</span><span class="diag-v" id="dRows">—</span></div>
+      <div class="diag-row"><span class="diag-k">Column names in sheet</span><span class="diag-v" id="dCols">—</span></div>
+      <div class="diag-row"><span class="diag-k">Status column used</span><span class="diag-v" id="dStatusCol">—</span></div>
+      <div class="diag-row"><span class="diag-k">ID column used</span><span class="diag-v" id="dIdCol">—</span></div>
+      <div class="diag-row"><span class="diag-k">Duplicate IDs in sheet</span><span class="diag-v" id="dDupes">—</span></div>
+      <div class="diag-row"><span class="diag-k">Sheet Fee vs event-count fee</span><span class="diag-v" id="dFee">—</span></div>
+      <div class="diag-row"><span class="diag-k">Last write (POST) result</span><span class="diag-v" id="dPost">no writes yet this session</span></div>
+      <div class="diag-row"><span class="diag-k">Unconfirmed writes</span><span class="diag-v" id="dUnsynced">0</span></div>
+    </div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-title">Registration &amp; Revenue Overview</div>
+    <div class="totals-row">
+      <div class="total-stat-box">
+        <span class="total-stat-label">Total Registrations</span>
+        <div class="total-stat-count" id="totalRegsCount">0</div>
+      </div>
+      <div class="total-stat-box">
+        <span class="total-stat-label">Total Revenue Collected</span>
+        <div class="total-stat" id="totalCollected">₹0</div>
+      </div>
+      <div class="total-stat-box">
+        <span class="total-stat-label">Total Registration Potential</span>
+        <div class="total-stat-potential" id="totalPotential">₹0</div>
+      </div>
+    </div>
+    <div class="event-stats-grid" id="eventStatsGrid">
+      <div style="color:var(--text-dim); font-size:13px;">Calculating stats...</div>
+    </div>
+  </div>
+
+  <div class="filter-card">
+    <div class="filter-group">
+      <label for="eventFilter">Filter by Event</label>
+      <select id="eventFilter" class="filter-control"><option value="ALL">All Events</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="gradeFilter">Filter by Grade / Age Group</label>
+      <select id="gradeFilter" class="filter-control"><option value="ALL">All Grades</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="statusFilter">Payment Status</label>
+      <select id="statusFilter" class="filter-control">
+        <option value="ALL">All Statuses</option>
+        <option value="Pending">Pending Only</option>
+        <option value="Paid">Paid Only</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="sortBy">Sort By</label>
+      <select id="sortBy" class="filter-control">
+        <option value="Status-pending">Pending First</option>
+        <option value="Status-paid">Paid First</option>
+        <option value="ID-asc">ID (Ascending)</option>
+        <option value="Name-asc">Name (A-Z)</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="searchInput">Search Competitor</label>
+      <input type="text" id="searchInput" class="filter-control" placeholder="Search name, ID, or grade...">
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <div class="actions-left">
+      <button class="btn btn-refresh" id="btnRefresh">↻ Refresh Registrations</button>
+      <button class="btn btn-retry" id="btnRetry" hidden>⟳ Retry unconfirmed writes</button>
+      <button class="btn btn-clear" id="btnClear" hidden>✕ Discard local changes, show sheet</button>
+    </div>
+    <label class="toggle-wrap">
+      <input type="checkbox" id="allowRevert">
+      Enable Revert ("Mark Pending")
+    </label>
+  </div>
+
+  <div class="result-bar" id="resultBar">
+    <div class="result-count" id="resultCount">Showing <b>0</b> people</div>
+    <div class="result-meta">
+      <span class="paid" id="resultPaid">0 paid</span>
+      <span class="pending" id="resultPending">0 pending</span>
+      <span id="resultMoney">₹0 collected of ₹0</span>
+      <button class="btn btn-reset" id="btnResetFilters" hidden>✕ Clear filters</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Name</th><th>Grade</th><th>Selected Events</th>
+          <th>Amount Due</th><th>Status</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="regTableBody">
+        <tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-dim);">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG
+   ===================================================================== */
+const REGISTRATION_API_URL = "https://script.google.com/macros/s/AKfycbxFw0E6BPQNYBC1gLRlHQ9Sn6AU2-_skhGpoi6bzo_uxFT9xLap94ilb8A5Ie-Hb_gc/exec";
+const CURRENCY_SYMBOL = "₹";
+
+/* Age groups for the Grade filter. Edit labels and ranges to match your categories.
+   Grades are read as numbers: "5", "Grade 5", "5th", "V", "Class 5" all become 5.
+   LKG / UKG / KG / Nursery / Pre-K count as grade 0. */
+const AGE_GROUPS = [
+  { label: "Grades 5-6",   min: 5,  max: 6  },
+  { label: "Grades 7-9",   min: 7,  max: 9  }
+];
+
+const PENDING_KEY = "payment_pending_writes_v2";
+const LEGACY_KEY  = "payment_statuses_cache";
+const FILTER_KEY  = "admin_filter_session";
+
+/* =====================================================================
+   SAFE STORAGE
+   ===================================================================== */
+function lsGet(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { return fallback; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch (e) { return false; }
+}
+function lsRemove(key) {
+  try { localStorage.removeItem(key); } catch (e) {}
+}
+function ssGet(key, fallback) {
+  try { const v = sessionStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { return fallback; }
+}
+function ssSet(key, val) {
+  try { sessionStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+}
+
+/* Old builds copied a local status cache into the write queue, which then
+   overrode the sheet forever. Drop that cache and any entries it produced. */
+(function purgeLegacy() {
+  lsRemove(LEGACY_KEY);
+  const p = lsGet(PENDING_KEY, {});
+  let changed = false;
+  Object.keys(p).forEach(id => {
+    if (!p[id] || p[id].ts === 0 || p[id].lastError === "migrated from old cache") { delete p[id]; changed = true; }
+  });
+  if (changed) lsSet(PENDING_KEY, p);
+})();
+
+/* =====================================================================
+   ROBUST COLUMN & FIELD RESOLUTION
+   ===================================================================== */
+function normKey(k) { return String(k).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+function indexRow(row) {
+  if (!row || typeof row !== "object") return {};
+  if (!row.__idx) {
+    const idx = {};
+    Object.keys(row).forEach(k => { idx[normKey(k)] = k; });
+    Object.defineProperty(row, "__idx", { value: idx, enumerable: false, writable: true });
+  }
+  return row.__idx;
+}
+
+function findColumnKey(row, candidates) {
+  if (!row || typeof row !== "object") return null;
+  const idx = indexRow(row);
+  for (const c of candidates) {
+    const real = idx[normKey(c)];
+    if (real !== undefined) return real;
+  }
+  return null;
+}
+
+function getFieldValue(row, candidates) {
+  if (!row || typeof row !== "object") return "";
+  const realKey = findColumnKey(row, candidates);
+  if (realKey && row[realKey] != null) {
+    return String(row[realKey]).trim();
+  }
+  return "";
+}
+
+function sniffStatusColumn(row) {
+  if (!row || typeof row !== "object") return null;
+  const idx = {};
+  Object.entries(indexRow(row)).forEach(([nk, real]) => {
+    if (nk !== "computedstatus" && nk !== "syncstate" && nk !== "syncnote") idx[nk] = real;
+  });
+  for (const nk of Object.keys(idx)) {
+    if (nk.includes("paid") || nk.includes("paymentstatus") || nk.includes("feestatus")) return idx[nk];
+  }
+  for (const nk of Object.keys(idx)) {
+    if (nk.includes("status") || (nk.includes("payment") && !nk.includes("id"))) return idx[nk];
+  }
+  return null;
+}
+
+const ID_KEYS     = ["Username","ID","Competitor ID","User ID","Reg ID","Registration ID","Roll No","Roll Number","Admission No","id"];
+const NAME_KEYS   = ["Name","Full Name","Competitor Name","Student Name","Participant Name","name"];
+const GRADE_KEYS  = ["Grade","Class","Grade/Class","Std","Standard","Year","grade"];
+const EVENT_KEYS  = ["Events","Selected Events","SelectedEvents","Event","Event List","Events Selected","events"];
+const STATUS_KEYS = ["Payment Status","PaymentStatus","Fee Status","FeeStatus","Status","Payment","Paid","Payment Done","Fee Paid","paymentStatus","status"];
+const AMOUNT_KEYS = ["Amount","Fee","Total Fee","Total Amount","Amount Due","AmountDue","Total","fee"];
+
+let DETECTED_STATUS_COL = null;
+let DETECTED_ID_COL = null;
+let DUPLICATE_IDS = [];
+
+function getRecordId(row)     { return getFieldValue(row, ID_KEYS)     || "—"; }
+function getRecordName(row)   { return getFieldValue(row, NAME_KEYS)   || "—"; }
+function getRecordGrade(row)  { return getFieldValue(row, GRADE_KEYS)  || "—"; }
+function getRecordEvents(row) { return getFieldValue(row, EVENT_KEYS)  || "—"; }
+
+function getSheetStatus(row) {
+  const val = getFieldValue(row, STATUS_KEYS);
+  if (val !== "") return val;
+  if (DETECTED_STATUS_COL && row[DETECTED_STATUS_COL] != null) return String(row[DETECTED_STATUS_COL]).trim();
+  return "";
+}
+
+const PAID_WORDS = ["paid","true","yes","done","1","y","complete","completed","received","payment done","success","successful"];
+function isStatusPaid(s) {
+  if (s === true) return true;
+  if (s === null || s === undefined) return false;
+  const c = String(s).trim().toLowerCase();
+  if (!c) return false;
+  return PAID_WORDS.includes(c);
+}
+
+/* =====================================================================
+   RESPONSE PARSING (accepts any common Apps Script shape)
+   ===================================================================== */
+function extractRows(data) {
+  if (data && typeof data === "object" && !Array.isArray(data) && data.success === false) {
+    throw new Error("Backend returned an error: " + (data.error || data.message || JSON.stringify(data).slice(0, 160)));
+  }
+
+  let rows = null, shape = "";
+  if (Array.isArray(data)) { rows = data; shape = "top-level array"; }
+  else if (data && typeof data === "object") {
+    const candidates = ["data","registrations","rows","result","records","values","items"];
+    for (const k of candidates) {
+      if (Array.isArray(data[k])) { rows = data[k]; shape = "{" + k + ": [...]}"; break; }
+      if (data[k] && typeof data[k] === "object") {
+        for (const k2 of candidates) {
+          if (Array.isArray(data[k][k2])) { rows = data[k][k2]; shape = "{" + k + ": {" + k2 + ": [...]}}"; break; }
+        }
+        if (rows) break;
+      }
+    }
+  }
+  if (!rows) {
+    throw new Error("JSON received but no list of rows found. Top-level keys: "
+      + (data && typeof data === "object" ? Object.keys(data).join(", ") : typeof data));
+  }
+
+  // Raw getValues() output: first row is headers
+  if (rows.length && Array.isArray(rows[0])) {
+    const headers = rows[0].map(h => String(h).trim());
+    rows = rows.slice(1)
+      .filter(r => Array.isArray(r) && r.join("") !== "")
+      .map(r => { const o = {}; headers.forEach((h, i) => { if (h) o[h] = r[i]; }); return o; });
+    shape += " (2D array converted using header row)";
+  }
+
+  rows = rows.filter(r => r && typeof r === "object" && Object.keys(r).length > 0);
+  return { rows: rows, shape: shape };
+}
+
+function explainFetchError(err) {
+  if (err instanceof TypeError) {
+    return "Browser blocked the request (" + err.message + "). Usually the Apps Script deployment is not public: "
+      + "Deploy > Manage deployments > Edit > Who has access: Anyone, Execute as: Me, Version: New version.";
+  }
+  return err.message;
+}
+
+/* =====================================================================
+   EVENT / FEE PARSING
+   ===================================================================== */
+function splitEvents(str) {
+  if (!str || str === "—") return [];
+  // '/' excluded so titles like '3x3x3 / 4x4x4 Speedcube' stay intact
+  return String(str).split(/[,;|\n]+/).map(e => e.trim()).filter(e => e.length > 0);
+}
+
+function calculateFeeFromEvents(eventsStr) {
+  const n = splitEvents(eventsStr).length;
+  if (n === 1) return 100;
+  if (n === 2) return 200;
+  if (n === 3) return 250;
+  if (n === 4) return 300;
+  if (n >= 5)  return 350;
+  return 0;
+}
+
+function getSheetFee(row) {
+  const explicit = getFieldValue(row, AMOUNT_KEYS);
+  if (!explicit) return null;
+  const parsed = parseFloat(explicit.replace(/[^0-9.]/g, ""));
+  return isNaN(parsed) ? null : parsed;
+}
+
+function getNumericAmount(row) {
+  const sheetFee = getSheetFee(row);
+  if (sheetFee !== null && sheetFee > 0) return sheetFee;
+  return calculateFeeFromEvents(getRecordEvents(row));
+}
+
+function calculateAmount(row) { return CURRENCY_SYMBOL + getNumericAmount(row); }
+
+/* =====================================================================
+   PENDING-WRITE QUEUE
+   ===================================================================== */
+function getPending() { return lsGet(PENDING_KEY, {}); }
+function setPending(p) { return lsSet(PENDING_KEY, p); }
+
+function queueWrite(id, status) {
+  const p = getPending();
+  p[id] = { status: status, ts: Date.now(), tries: (p[id] && p[id].tries) || 0, lastError: null };
+  setPending(p);
+}
+function markWriteResult(id, ok, note) {
+  const p = getPending();
+  if (!p[id]) return;
+  p[id].tries = (p[id].tries || 0) + 1;
+  p[id].lastError = ok ? null : (note || "unknown error");
+  setPending(p);
+}
+function clearConfirmed(id) {
+  const p = getPending();
+  if (p[id]) { delete p[id]; setPending(p); }
+}
+function findPending(pendingWrites, id) {
+  if (pendingWrites[id]) return { key: id, entry: pendingWrites[id] };
+  const lc = String(id).toLowerCase();
+  for (const k of Object.keys(pendingWrites)) {
+    if (k.toLowerCase() === lc) return { key: k, entry: pendingWrites[k] };
+  }
+  return null;
+}
+
+/* =====================================================================
+   MERGE SHEET + OUTBOX
+   ===================================================================== */
+let rawRegistrations = [];
+let lastPostNote = "no writes yet this session";
+
+function reconcile(data) {
+  const pendingWrites = getPending();
+  return data.map(row => {
+    const id = getRecordId(row);
+    const sheetPaid = isStatusPaid(getSheetStatus(row));
+    const sheetNorm = sheetPaid ? "Paid" : "Pending";
+
+    const hit = id !== "—" ? findPending(pendingWrites, id) : null;
+
+    if (hit) {
+      if (hit.entry.status === sheetNorm) {
+        clearConfirmed(hit.key);
+        row.computedStatus = sheetNorm;
+        row.syncState = "confirmed";
+      } else {
+        row.computedStatus = hit.entry.status;
+        row.syncState = "unsynced";
+        row.syncNote = hit.entry.lastError ? ("not saved: " + hit.entry.lastError) : "not yet confirmed by sheet";
+      }
+    } else {
+      row.computedStatus = sheetNorm;
+      row.syncState = "confirmed";
+    }
+    return row;
+  });
+}
+
+/* =====================================================================
+   HTML ESCAPING
+   ===================================================================== */
+const ESC = { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" };
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ESC[c]); }
+
+/* =====================================================================
+   DIAGNOSTICS
+   ===================================================================== */
+function toggleDiag() {
+  const b = document.getElementById("diagBody");
+  b.hidden = !b.hidden;
+  document.getElementById("diagCaret").textContent = b.hidden ? "show details ▾" : "hide details ▴";
+}
+function openDiag() {
+  document.getElementById("diagBody").hidden = false;
+  document.getElementById("diagCaret").textContent = "hide details ▴";
+}
+function setDiag(level, headline, fields) {
+  const card = document.getElementById("diagCard");
+  card.className = "diag " + level;
+  document.getElementById("diagHeadline").textContent = headline;
+  Object.keys(fields || {}).forEach(k => {
+    const el = document.getElementById(k);
+    if (el) el.textContent = fields[k];
+  });
+  const unsyncedCount = Object.keys(getPending()).length;
+  document.getElementById("dUnsynced").textContent = unsyncedCount;
+  document.getElementById("btnRetry").hidden = unsyncedCount === 0;
+  document.getElementById("btnClear").hidden = unsyncedCount === 0;
+  if (unsyncedCount > 0 && level === "ok") {
+    card.className = "diag warn";
+    document.getElementById("diagHeadline").textContent =
+      unsyncedCount + " change(s) are showing here but are NOT saved in the sheet. Retry, or discard them to see the sheet as-is.";
+  }
+}
+
+/* =====================================================================
+   LOAD
+   ===================================================================== */
+function loadRegistrations(opts) {
+  opts = opts || {};
+  const tbody = document.getElementById("regTableBody");
+  if (!opts.silent) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-dim);">Loading...</td></tr>';
+  }
+
+  const url = REGISTRATION_API_URL + "?action=registrations&_=" + Date.now();
+
+  fetch(url, { cache: "no-store", redirect: "follow" })
+    .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text: text })))
+    .then(resp => {
+      if (!resp.ok) throw new Error("HTTP " + resp.status + " from the Apps Script endpoint");
+
+      let data;
+      try { data = JSON.parse(resp.text); }
+      catch (e) {
+        const t = resp.text;
+        if (/accounts\.google\.com|ServiceLogin|Sign in/i.test(t)) {
+          throw new Error("Got a Google sign-in page, not data. Set the deployment's 'Who has access' to Anyone and deploy a new version.");
+        }
+        if (/Script function not found: doGet/i.test(t)) {
+          throw new Error("Backend has no doGet function (or the latest code is not deployed as a new version).");
+        }
+        throw new Error("Endpoint did not return JSON. First 160 chars: " + t.slice(0, 160));
+      }
+
+      const parsed = extractRows(data);
+      const fetched = parsed.rows;
+
+      if (fetched.length > 0) {
+        DETECTED_STATUS_COL = findColumnKey(fetched[0], STATUS_KEYS) || sniffStatusColumn(fetched[0]);
+        DETECTED_ID_COL = findColumnKey(fetched[0], ID_KEYS);
+      } else {
+        DETECTED_STATUS_COL = null;
+        DETECTED_ID_COL = null;
+      }
+
+      // Capture the backend's real columns BEFORE reconcile() adds computedStatus/syncState
+      const cols = fetched.length ? Object.keys(fetched[0]).join(", ") : "(none)";
+
+      rawRegistrations = reconcile(fetched);
+
+      const idSeen = {}, dupes = [];
+      rawRegistrations.forEach(r => {
+        const id = getRecordId(r);
+        if (id === "—") return;
+        const k = id.toLowerCase();
+        if (idSeen[k]) { if (dupes.indexOf(id) === -1) dupes.push(id); }
+        idSeen[k] = true;
+      });
+      DUPLICATE_IDS = dupes;
+
+      let feeMismatch = 0, feeMissing = 0;
+      rawRegistrations.forEach(r => {
+        const sheetFee = getSheetFee(r);
+        const ladder = calculateFeeFromEvents(getRecordEvents(r));
+        if (sheetFee === null || sheetFee === 0) { feeMissing++; return; }
+        if (ladder > 0 && sheetFee !== ladder) feeMismatch++;
+      });
+
+      let level = "ok";
+      let headline = "Connected. Reading payment status from the sheet.";
+      if (fetched.length === 0) {
+        level = "warn";
+        headline = "Connected, but the backend returned 0 rows. Check the sheet name in doGet.";
+      } else if (!DETECTED_ID_COL) {
+        level = "fail";
+        headline = "Connected, but NO ID column was found. Rows cannot be marked paid.";
+      } else if (!DETECTED_STATUS_COL) {
+        level = "warn";
+        headline = "Connected, but NO payment-status column was found. Every row will read as Pending.";
+      }
+      if (dupes.length > 0) {
+        level = "fail";
+        headline = dupes.length + " DUPLICATE ID(s) in the sheet. Those students cannot be marked paid correctly. Fix the sheet.";
+      }
+
+      setDiag(level, headline, {
+        dGet: "OK (" + fetched.length + " rows)",
+        dShape: parsed.shape,
+        dRows: String(fetched.length),
+        dCols: cols,
+        dStatusCol: DETECTED_STATUS_COL || "NOT FOUND. Check that doGet returns the Payment Status column",
+        dIdCol: DETECTED_ID_COL || "NOT FOUND. Rows cannot be matched to writes",
+        dDupes: dupes.length === 0 ? "none" : dupes.join(", "),
+        dFee: feeMismatch + " row(s) where the sheet Fee disagrees with event count, "
+              + feeMissing + " row(s) with no Fee value (calculated fallback used)",
+        dPost: lastPostNote
+      });
+      if (level !== "ok") openDiag();
+
+      populateFilterDropdowns(rawRegistrations);
+      if (!opts.silent) restoreFilterSessionState();
+      calculateCollections(rawRegistrations);
+
+      if (rawRegistrations.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-dim);">No registrations found.</td></tr>';
+        return;
+      }
+      applyFilterAndSort();
+    })
+    .catch(err => {
+      console.error("Error loading registrations:", err);
+      const msg = explainFetchError(err);
+      setDiag("fail", "Cannot read from the backend.", {
+        dGet: "FAILED: " + msg,
+        dShape: "—", dRows: "—", dCols: "—", dStatusCol: "—", dIdCol: "—", dPost: lastPostNote
+      });
+      openDiag();
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--cube-red); padding:20px;">'
+        + esc(msg) + '</td></tr>';
+    });
+}
+
+/* =====================================================================
+   STATS
+   ===================================================================== */
+function calculateCollections(data) {
+  let totalCollected = 0, totalPotential = 0;
+  const eventCounts = {}, eventPaidCounts = {};
+
+  data.forEach(row => {
+    const isPaid = isStatusPaid(row.computedStatus);
+    const amount = getNumericAmount(row);
+    totalPotential += amount;
+    if (isPaid) totalCollected += amount;
+
+    splitEvents(getRecordEvents(row)).forEach(evt => {
+      eventCounts[evt] = (eventCounts[evt] || 0) + 1;
+      if (isPaid) eventPaidCounts[evt] = (eventPaidCounts[evt] || 0) + 1;
+    });
+  });
+
+  document.getElementById("totalRegsCount").textContent = data.length.toLocaleString();
+  document.getElementById("totalCollected").textContent = CURRENCY_SYMBOL + totalCollected.toLocaleString();
+  document.getElementById("totalPotential").textContent = CURRENCY_SYMBOL + totalPotential.toLocaleString();
+
+  const grid = document.getElementById("eventStatsGrid");
+  const allEvents = Object.keys(eventCounts).sort();
+  if (allEvents.length === 0) {
+    grid.innerHTML = '<div style="color:var(--text-dim); font-size:13px; grid-column:1/-1;">No registrations found.</div>';
+    return;
+  }
+  grid.innerHTML = allEvents.map(evt => {
+    const total = eventCounts[evt] || 0, paid = eventPaidCounts[evt] || 0;
+    return '<div class="event-stat-item">'
+      + '<div class="event-stat-name">' + esc(evt) + '</div>'
+      + '<div class="event-stat-val">' + total + ' Total Regs</div>'
+      + '<div class="event-stat-sub">' + paid + ' Paid Registration' + (paid === 1 ? '' : 's') + '</div>'
+      + '</div>';
+  }).join("");
+}
+
+/* =====================================================================
+   FILTERS
+   ===================================================================== */
+function saveFilterSessionState() {
+  ssSet(FILTER_KEY, {
+    eventFilter: document.getElementById("eventFilter").value,
+    gradeFilter: document.getElementById("gradeFilter").value,
+    statusFilter: document.getElementById("statusFilter").value,
+    sortBy: document.getElementById("sortBy").value,
+    searchInput: document.getElementById("searchInput").value,
+    allowRevert: document.getElementById("allowRevert").checked
+  });
+}
+
+function restoreFilterSessionState() {
+  const s = ssGet(FILTER_KEY, null);
+  if (!s) return;
+  const setIfPresent = (elId, val) => {
+    const el = document.getElementById(elId);
+    if (val === undefined || !el) return;
+    if (el.tagName === "SELECT") {
+      const exists = Array.from(el.options).some(opt => opt.value === String(val));
+      if (!exists) return;
+    }
+    el.value = val;
+  };
+  setIfPresent("statusFilter", s.statusFilter);
+  setIfPresent("sortBy", s.sortBy);
+  setIfPresent("searchInput", s.searchInput);
+  setIfPresent("eventFilter", s.eventFilter);
+  setIfPresent("gradeFilter", s.gradeFilter);
+  if (s.allowRevert !== undefined) document.getElementById("allowRevert").checked = !!s.allowRevert;
+}
+
+function populateFilterDropdowns(data) {
+  const eventSelect = document.getElementById("eventFilter");
+  const gradeSelect = document.getElementById("gradeFilter");
+  const prevEvent = eventSelect.value, prevGrade = gradeSelect.value;
+
+  const events = new Set(), grades = new Set();
+  data.forEach(item => {
+    splitEvents(getRecordEvents(item)).forEach(e => events.add(e));
+    const g = getRecordGrade(item);
+    if (g && g !== "—") grades.add(g);
+  });
+
+  eventSelect.innerHTML = '<option value="ALL">All Events</option>'
+    + Array.from(events).sort().map(e => '<option value="' + esc(e) + '">' + esc(e) + '</option>').join("");
+
+  // Age-group counts
+  const groupCounts = AGE_GROUPS.map(() => 0);
+  let ungrouped = 0;
+  data.forEach(item => {
+    const i = groupIndexForGrade(getRecordGrade(item));
+    if (i === -1) ungrouped++; else groupCounts[i]++;
+  });
+
+  gradeSelect.innerHTML = '<option value="ALL">All Grades</option>'
+    + '<optgroup label="Age groups">'
+    + AGE_GROUPS.map((g, i) => '<option value="GROUP:' + i + '">' + esc(g.label) + ' (' + groupCounts[i] + ')</option>').join("")
+    + (ungrouped > 0 ? '<option value="GROUP:NONE">Not in any group (' + ungrouped + ')</option>' : '')
+    + '</optgroup>'
+    + '<optgroup label="Single grade">'
+    + Array.from(grades).sort((a,b) => a.localeCompare(b, undefined, {numeric:true}))
+        .map(g => '<option value="' + esc(g) + '">' + esc(g) + '</option>').join("")
+    + '</optgroup>';
+
+  if (events.has(prevEvent)) eventSelect.value = prevEvent;
+  if (Array.from(gradeSelect.options).some(o => o.value === prevGrade)) gradeSelect.value = prevGrade;
+}
+
+/* ---------- grade -> number -> age group ---------- */
+const ROMAN = { i:1, ii:2, iii:3, iv:4, v:5, vi:6, vii:7, viii:8, ix:9, x:10, xi:11, xii:12 };
+function gradeNumber(g) {
+  if (!g || g === "—") return null;
+  const s = String(g).toLowerCase().trim();
+  if (/\b(lkg|ukg|kg|nursery|pre[\s-]?k|prep|kindergarten)\b/.test(s)) return 0;
+  const d = s.match(/\d+/);
+  if (d) return parseInt(d[0], 10);
+  const words = s.replace(/[^a-z\s]/g, " ").split(/\s+/);
+  for (const w of words) if (ROMAN[w] !== undefined) return ROMAN[w];
+  return null;
+}
+function groupIndexForGrade(g) {
+  const n = gradeNumber(g);
+  if (n === null) return -1;
+  return AGE_GROUPS.findIndex(grp => n >= grp.min && n <= grp.max);
+}
+function matchesGradeFilter(grade, filter) {
+  if (filter === "ALL") return true;
+  if (filter === "GROUP:NONE") return groupIndexForGrade(grade) === -1;
+  if (filter.indexOf("GROUP:") === 0) return groupIndexForGrade(grade) === parseInt(filter.slice(6), 10);
+  return grade.toLowerCase() === filter.toLowerCase();
+}
+
+function applyFilterAndSort() {
+  saveFilterSessionState();
+
+  const eventFilter  = document.getElementById("eventFilter").value;
+  const gradeFilter  = document.getElementById("gradeFilter").value;
+  const statusFilter = document.getElementById("statusFilter").value;
+  const sortBy       = document.getElementById("sortBy").value;
+  const q            = document.getElementById("searchInput").value.toLowerCase().trim();
+  const allowRevert  = document.getElementById("allowRevert").checked;
+
+  const filtered = rawRegistrations.filter(row => {
+    const isPaid = isStatusPaid(row.computedStatus);
+    const grade = getRecordGrade(row);
+
+    const eventTokens = splitEvents(getRecordEvents(row)).map(e => e.toLowerCase());
+    const matchEvent = eventFilter === "ALL" || eventTokens.includes(eventFilter.toLowerCase());
+    const matchGrade = matchesGradeFilter(grade, gradeFilter);
+
+    let matchStatus = true;
+    if (statusFilter === "Pending") matchStatus = !isPaid;
+    if (statusFilter === "Paid") matchStatus = isPaid;
+
+    const matchSearch = !q
+      || getRecordName(row).toLowerCase().includes(q)
+      || getRecordId(row).toLowerCase().includes(q)
+      || grade.toLowerCase().includes(q);
+
+    return matchEvent && matchGrade && matchStatus && matchSearch;
+  });
+
+  const byName = (a,b) => getRecordName(a).localeCompare(getRecordName(b));
+  filtered.sort((a, b) => {
+    const pa = isStatusPaid(a.computedStatus), pb = isStatusPaid(b.computedStatus);
+    if (sortBy === "Status-pending" && pa !== pb) return pa ? 1 : -1;
+    if (sortBy === "Status-paid"    && pa !== pb) return pa ? -1 : 1;
+    if (sortBy === "Name-asc") return byName(a, b);
+    if (sortBy === "ID-asc") return getRecordId(a).localeCompare(getRecordId(b), undefined, {numeric:true});
+    return byName(a, b);
+  });
+
+  const filtersActive = eventFilter !== "ALL" || gradeFilter !== "ALL" || statusFilter !== "ALL" || q !== "";
+  updateResultBar(filtered, filtersActive);
+  renderTable(filtered, allowRevert);
+}
+
+function updateResultBar(filtered, filtersActive) {
+  let paid = 0, collected = 0, due = 0;
+  filtered.forEach(r => {
+    const amt = getNumericAmount(r);
+    due += amt;
+    if (isStatusPaid(r.computedStatus)) { paid++; collected += amt; }
+  });
+  const n = filtered.length, total = rawRegistrations.length;
+  const people = n === 1 ? " person" : " people";
+  document.getElementById("resultCount").innerHTML = filtersActive
+    ? "Showing <b>" + n + "</b>" + people + " <span style=\"color:var(--text-dim); font-size:14px;\">of " + total + "</span>"
+    : "Showing all <b>" + n + "</b>" + people;
+  document.getElementById("resultPaid").textContent = paid + " paid";
+  document.getElementById("resultPending").textContent = (n - paid) + " pending";
+  document.getElementById("resultMoney").textContent =
+    CURRENCY_SYMBOL + collected.toLocaleString() + " collected of " + CURRENCY_SYMBOL + due.toLocaleString();
+  document.getElementById("btnResetFilters").hidden = !filtersActive;
+}
+
+function resetFilters() {
+  document.getElementById("eventFilter").value = "ALL";
+  document.getElementById("gradeFilter").value = "ALL";
+  document.getElementById("statusFilter").value = "ALL";
+  document.getElementById("searchInput").value = "";
+  applyFilterAndSort();
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+function renderTable(records, allowRevert) {
+  const tbody = document.getElementById("regTableBody");
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-dim);">No matching registrations found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = records.map(row => {
+    const recId = getRecordId(row);
+    const hasId = recId && recId !== "—";
+    const isPaid = isStatusPaid(row.computedStatus);
+    const unsynced = row.syncState === "unsynced";
+    const isDupe = DUPLICATE_IDS.indexOf(recId) !== -1;
+
+    let action;
+    if (isDupe) {
+      action = '<button class="btn btn-done" disabled title="Duplicate ID found in sheet">Duplicate ID</button>';
+    } else if (!hasId) {
+      action = '<button class="btn btn-done" disabled title="Missing ID column">No ID</button>';
+    } else if (!isPaid) {
+      action = '<button class="btn btn-pay" data-id="' + esc(recId) + '" data-target="Paid">Mark Paid</button>';
+    } else if (allowRevert) {
+      action = '<button class="btn btn-unpay" data-id="' + esc(recId) + '" data-target="Pending">Mark Pending</button>';
+    } else {
+      action = '<button class="btn btn-done" disabled>Done / Paid</button>';
+    }
+
+    return '<tr class="' + (unsynced || isDupe ? "unsynced" : "") + '">'
+      + '<td><b>' + esc(recId) + '</b>'
+        + (isDupe ? '<span class="sync-note">⚠ duplicate ID</span>' : '') + '</td>'
+      + '<td>' + esc(getRecordName(row)) + '</td>'
+      + '<td><span class="badge badge-grade">' + esc(getRecordGrade(row)) + '</span></td>'
+      + '<td>' + esc(getRecordEvents(row)) + '</td>'
+      + '<td><span class="amount-tag">' + esc(calculateAmount(row)) + '</span></td>'
+      + '<td><span class="badge ' + (isPaid ? "badge-paid" : "badge-pending") + '">'
+          + (isPaid ? "Payment Done" : "Pending") + '</span>'
+          + (unsynced ? '<span class="sync-note">⚠ ' + esc(row.syncNote || "not saved to sheet") + '</span>' : '')
+        + '</td>'
+      + '<td>' + action + '</td>'
+      + '</tr>';
+  }).join("");
+}
+
+/* =====================================================================
+   WRITE HANDLERS
+   ===================================================================== */
+let verifyTimer = null;
+function scheduleVerify() {
+  clearTimeout(verifyTimer);
+  verifyTimer = setTimeout(() => loadRegistrations({ silent: true }), 1500);
+}
+
+function postStatus(id, targetStatus) {
+  return fetch(REGISTRATION_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    redirect: "follow",
+    body: JSON.stringify({
+      action: "updateRegistration",
+      Username: id,
+      id: id,
+      ID: id,
+      PaymentStatus: targetStatus,
+      "Payment Status": targetStatus,
+      Status: targetStatus
+    })
+  })
+  .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text: text })))
+  .then(resp => {
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    let parsed = null;
+    try { parsed = JSON.parse(resp.text); } catch (e) {}
+    if (parsed && (parsed.success === true || parsed.status === "success" || parsed.result === "success")) {
+      let regs = null;
+      try { regs = extractRows(parsed).rows; } catch (e) { regs = null; }
+      return { ok: true, note: "sheet accepted the update", registrations: regs && regs.length ? regs : null };
+    }
+    if (parsed) return { ok: false, note: "backend error: " + (parsed.error || resp.text.slice(0, 120)) };
+    return { ok: false, note: "backend returned non-JSON: " + resp.text.slice(0, 120) };
+  });
+}
+
+function togglePayment(id, targetStatus, btn) {
+  if (!confirm("Set payment status for " + id + " to " + targetStatus + "?")) return;
+
+  if (btn) { btn.disabled = true; btn.textContent = "Saving..."; }
+
+  queueWrite(id, targetStatus);
+  const item = rawRegistrations.find(r => String(getRecordId(r)).trim().toLowerCase() === String(id).trim().toLowerCase());
+  if (item) { item.computedStatus = targetStatus; item.syncState = "unsynced"; item.syncNote = "saving..."; }
+  calculateCollections(rawRegistrations);
+  applyFilterAndSort();
+
+  postStatus(id, targetStatus)
+    .then(r => {
+      markWriteResult(id, r.ok, r.note);
+      lastPostNote = (r.ok ? "OK: " : "FAILED: ") + r.note;
+      document.getElementById("dPost").textContent = lastPostNote;
+
+      if (r.ok && r.registrations) {
+        rawRegistrations = reconcile(r.registrations);
+        calculateCollections(rawRegistrations);
+        applyFilterAndSort();
+      } else {
+        // Keep the queue entry until a fresh GET confirms the sheet really changed
+        scheduleVerify();
+      }
+    })
+    .catch(err => {
+      const msg = explainFetchError(err);
+      markWriteResult(id, false, msg);
+      lastPostNote = "FAILED: " + msg;
+      document.getElementById("dPost").textContent = lastPostNote;
+      setDiag("fail", "The sheet write failed.", { dPost: lastPostNote });
+      openDiag();
+      rawRegistrations = reconcile(rawRegistrations);
+      applyFilterAndSort();
+    });
+}
+
+function retryUnsynced() {
+  const p = getPending();
+  const ids = Object.keys(p);
+  if (ids.length === 0) return;
+  const btn = document.getElementById("btnRetry");
+  btn.disabled = true; btn.textContent = "Retrying " + ids.length + "...";
+
+  Promise.all(ids.map(id =>
+    postStatus(id, p[id].status)
+      .then(r => markWriteResult(id, r.ok, r.note))
+      .catch(e => markWriteResult(id, false, explainFetchError(e)))
+  )).then(() => {
+    btn.disabled = false; btn.textContent = "⟳ Retry unconfirmed writes";
+    loadRegistrations({ silent: true });
+  });
+}
+
+function discardLocal() {
+  const n = Object.keys(getPending()).length;
+  if (!confirm("Discard " + n + " unsaved local change(s) and show exactly what the sheet has?")) return;
+  lsRemove(PENDING_KEY);
+  loadRegistrations();
+}
+
+/* =====================================================================
+   WIRING
+   ===================================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  ["eventFilter","gradeFilter","statusFilter","sortBy","allowRevert"].forEach(id =>
+    document.getElementById(id).addEventListener("change", applyFilterAndSort));
+  document.getElementById("searchInput").addEventListener("input", applyFilterAndSort);
+  document.getElementById("btnRefresh").addEventListener("click", () => loadRegistrations());
+  document.getElementById("btnRetry").addEventListener("click", retryUnsynced);
+  document.getElementById("btnClear").addEventListener("click", discardLocal);
+  document.getElementById("btnResetFilters").addEventListener("click", resetFilters);
+
+  document.getElementById("regTableBody").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-id]");
+    if (!btn || btn.disabled) return;
+    togglePayment(btn.getAttribute("data-id"), btn.getAttribute("data-target"), btn);
+  });
+
+  loadRegistrations();
+});
+</script>
+</body>
+</html>

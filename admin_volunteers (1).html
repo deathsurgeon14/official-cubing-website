@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Volunteer Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12172B; --paper:#F6F4EF; --paper-dim:#EAE7DD;
+    --cube-red:#E6402A; --cube-green:#1E8E5A; --cube-amber:#B7791F;
+    --line:#D9D5C8; --text-dim:#6B7280;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;padding:30px 20px;}
+  .wrap{max-width:1150px;margin:0 auto;}
+  header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:26px;}
+  .back-link{color:var(--text-dim);text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .back-link:hover{color:var(--ink);}
+
+  .diag{border-radius:14px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--line);background:#fff;
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.7;}
+  .diag.ok{border-color:rgba(30,142,90,.45);background:rgba(30,142,90,.06);}
+  .diag.warn{border-color:rgba(183,121,31,.45);background:rgba(183,121,31,.07);}
+  .diag.fail{border-color:rgba(230,64,42,.45);background:rgba(230,64,42,.07);}
+  .diag-head{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;}
+  .diag-title{font-family:'Space Grotesk',sans-serif;font-size:14px;}
+  .diag-body{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;}
+  .diag-body[hidden]{display:none;}
+  .diag-row{display:flex;gap:10px;}
+  .diag-k{color:var(--text-dim);min-width:200px;flex-shrink:0;}
+  .diag-v{word-break:break-word;}
+
+  .role-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .role-chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;}
+  .role-chip-name{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;color:var(--text-dim);}
+  .role-chip-num{font-family:'Space Grotesk',sans-serif;font-size:20px;}
+
+  .filter-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:20px;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end;}
+  .filter-group{display:flex;flex-direction:column;gap:6px;}
+  .filter-group label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);}
+  .filter-control{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper);
+    font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);outline:none;transition:border-color .15s;}
+  .filter-control:focus{border-color:var(--ink);}
+
+  .actions-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+  .actions-left{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;color:var(--text-dim);
+    padding:10px;border-bottom:1px solid var(--line);background:var(--paper-dim);text-align:left;}
+  td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr.flagged td{background:rgba(183,121,31,.06);}
+
+  .badge{display:inline-block;padding:3px 8px;border-radius:999px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;}
+  .badge-role{background:rgba(30,142,90,.15);color:var(--cube-green);margin:2px 2px 2px 0;}
+  .badge-event{background:rgba(18,23,43,.08);color:var(--ink);border:1px solid var(--line);margin:2px 2px 2px 0;}
+  .row-note{display:block;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--cube-amber);}
+
+  .phone-link{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink);text-decoration:none;font-weight:500;white-space:nowrap;}
+  .phone-link:hover{text-decoration:underline;color:var(--cube-green);}
+
+  .btn{padding:6px 12px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;
+    font-family:'IBM Plex Mono',monospace;transition:opacity .15s ease;}
+  .btn:hover{opacity:.85;}
+  .btn-refresh{background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;}
+  .btn-export{background:var(--cube-green);color:#fff;padding:8px 16px;border-radius:999px;}
+  .stats-counter{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Volunteer Registrations</h1>
+    <a href="admin_home.html" class="back-link">&larr; Back to Home</a>
+  </header>
+
+  <div class="diag" id="diagCard">
+    <div class="diag-head" onclick="toggleDiag()">
+      <span class="diag-title" id="diagHeadline">Checking connection to the volunteer sheet...</span>
+      <span style="color:var(--text-dim);" id="diagCaret">show details ▾</span>
+    </div>
+    <div class="diag-body" id="diagBody" hidden>
+      <div class="diag-row"><span class="diag-k">Endpoint</span><span class="diag-v" id="dGet">—</span></div>
+      <div class="diag-row"><span class="diag-k">Request that worked</span><span class="diag-v" id="dMode">—</span></div>
+      <div class="diag-row"><span class="diag-k">Rows returned</span><span class="diag-v" id="dRows">—</span></div>
+      <div class="diag-row"><span class="diag-k">Keys in each record</span><span class="diag-v" id="dKeys">—</span></div>
+      <div class="diag-row"><span class="diag-k">Field mapping resolved</span><span class="diag-v" id="dMap">—</span></div>
+      <div class="diag-row"><span class="diag-k">Rows missing a name</span><span class="diag-v" id="dNoName">—</span></div>
+      <div class="diag-row"><span class="diag-k">Duplicate mobile numbers</span><span class="diag-v" id="dDupes">—</span></div>
+    </div>
+  </div>
+
+  <div class="role-summary" id="roleSummary"></div>
+
+  <div class="filter-card">
+    <div class="filter-group">
+      <label for="roleFilter">Filter by Role</label>
+      <select id="roleFilter" class="filter-control"><option value="ALL">All Roles</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="scrambleFilter">Scrambler Specialty</label>
+      <select id="scrambleFilter" class="filter-control"><option value="ALL">All Events / Specialties</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="gradeFilter">Grade Level</label>
+      <select id="gradeFilter" class="filter-control"><option value="ALL">All Grades</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="sortBy">Sort Priority</label>
+      <select id="sortBy" class="filter-control">
+        <option value="Role-then-Specialty">Role, then Specialty</option>
+        <option value="Specialty-then-Role">Specialty, then Role</option>
+        <option value="Name-asc">Name (A-Z)</option>
+        <option value="Grade-asc">Grade Level</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="searchInput">Search Volunteer</label>
+      <input type="text" id="searchInput" class="filter-control" placeholder="Search name, phone, grade...">
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <div class="actions-left">
+      <button class="btn btn-refresh" id="btnRefresh">↻ Refresh Volunteers</button>
+      <button class="btn btn-export" id="btnExport">⇩ Export CSV</button>
+    </div>
+    <div id="volunteerCount" class="stats-counter">Showing 0 volunteers</div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Full Name</th><th>Mobile Number</th><th>Grade Level</th>
+          <th>Role</th><th>Scramble Events</th>
+        </tr>
+      </thead>
+      <tbody id="volunteerTableBody">
+        <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG
+   ===================================================================== */
+const VOLUNTEER_API_URL = "https://script.google.com/macros/s/AKfycbzcYqKBeoI-SlCik2nVTUWZpZAo1VDzKWn495hkntC615xHwuQNv4g8x3B2TbcjGIOj9A/exec";
+
+let rawVolunteers = [];
+let RESOLVED_MAP = {};
+let DUPLICATE_MOBILES = [];
+
+/* =====================================================================
+   FLEXIBLE FIELD LOOKUP
+   The old page listed exact key spellings (fullName, Name, mobileNumber,
+   Mobile, Phone...). One key the backend spells differently and that column
+   silently renders as "—" forever, with no error anywhere. Normalise both
+   sides before comparing, and record which key actually matched so the
+   diagnostics panel can show you.
+   ===================================================================== */
+function normKey(k){ return String(k).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+function indexRow(row){
+  if (!row.__idx){
+    const idx = {};
+    Object.keys(row).forEach(k => { if (idx[normKey(k)] === undefined) idx[normKey(k)] = k; });
+    Object.defineProperty(row, "__idx", { value: idx, enumerable: false, writable: true });
+  }
+  return row.__idx;
+}
+
+function pick(row, candidates){
+  if (!row || typeof row !== "object") return { value: "", column: null };
+  const idx = indexRow(row);
+  for (const c of candidates){
+    const real = idx[normKey(c)];
+    if (real !== undefined && row[real] !== null && String(row[real]).trim() !== ""){
+      return { value: String(row[real]).trim(), column: real };
+    }
+  }
+  return { value: "", column: null };
+}
+
+const NAME_KEYS   = ["fullName","Full Name","Name","volunteerName","studentName","Your Name"];
+const MOBILE_KEYS = ["mobileNumber","Mobile Number","Mobile No","Mobile","Phone","phoneNumber","Contact","Contact Number","WhatsApp"];
+const GRADE_KEYS  = ["grade","gradeLevel","Grade Level","Grade","Class","Standard"];
+const ROLE_KEYS   = ["roles","role","Role","Roles","volunteerRole","Preferred Role","Role Preference"];
+const EVENT_KEYS  = ["scrambleEvents","Scramble Events","Scrambling Events","scramblingEvents","events","Events","Specialty","Specialities"];
+
+function getName(r)   { return pick(r, NAME_KEYS).value   || "—"; }
+function getMobile(r) { return pick(r, MOBILE_KEYS).value || "—"; }
+function getGrade(r)  { return pick(r, GRADE_KEYS).value  || "—"; }
+
+/* Prefer a real array from the backend; fall back to splitting a string. */
+function getList(r, arrayKeys, stringKeys){
+  const idx = indexRow(r);
+  for (const k of arrayKeys){
+    const real = idx[normKey(k)];
+    if (real !== undefined && Array.isArray(r[real])) return r[real].map(s => String(s).trim()).filter(Boolean);
+  }
+  return splitList(pick(r, stringKeys).value);
+}
+function splitList(str){
+  if (!str) return [];
+  return String(str).split(/[,;|\n\/]+/).map(s => s.trim()).filter(s => {
+    const low = s.toLowerCase();
+    return s && low !== "-" && low !== "—" && low !== "none" && low !== "n/a" && low !== "na";
+  });
+}
+function getRoles(r)  { return getList(r, ["rolesList","roles"], ROLE_KEYS); }
+function getEvents(r) { return getList(r, ["scrambleEventsList","scrambleEvents"], EVENT_KEYS); }
+
+/* Mobile digits only, for dedupe and for the tel: href. */
+function mobileDigits(r){ return getMobile(r).replace(/\D/g, ""); }
+
+/* =====================================================================
+   ESCAPING (the old page dropped raw sheet values straight into innerHTML
+   and into href="tel:${...}")
+   ===================================================================== */
+const ESC = { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" };
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ESC[c]); }
+
+/* =====================================================================
+   DIAGNOSTICS
+   ===================================================================== */
+function toggleDiag(){
+  const b = document.getElementById("diagBody");
+  b.hidden = !b.hidden;
+  document.getElementById("diagCaret").textContent = b.hidden ? "show details ▾" : "hide details ▴";
+}
+function openDiag(){
+  document.getElementById("diagBody").hidden = false;
+  document.getElementById("diagCaret").textContent = "hide details ▴";
+}
+function setDiag(level, headline, fields){
+  const card = document.getElementById("diagCard");
+  card.className = "diag " + level;
+  document.getElementById("diagHeadline").textContent = headline;
+  Object.keys(fields || {}).forEach(k => {
+    const el = document.getElementById(k);
+    if (el) el.textContent = fields[k];
+  });
+}
+
+/* =====================================================================
+   LOAD
+   The old page called fetch(URL) with no query string at all. A backend
+   built from the registrations template answers a missing ?action= with
+   {status:"error"}, which then falls through to `data.volunteers ||
+   data.data || []` and renders as a cheerful empty table. So try the
+   explicit action first, then the bare URL, and report which one worked.
+   ===================================================================== */
+const ATTEMPTS = [
+  { label: "?action=volunteers", qs: "?action=volunteers" },
+  { label: "?action=list",       qs: "?action=list" },
+  { label: "bare URL (no action param)", qs: "" }
+];
+
+function fetchAttempt(attempt){
+  const sep = attempt.qs ? "&" : "?";
+  const url = VOLUNTEER_API_URL + attempt.qs + sep + "_=" + Date.now();
+  return fetch(url, { cache: "no-store", redirect: "follow" })
+    .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text })))
+    .then(resp => {
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      let data;
+      try { data = JSON.parse(resp.text); }
+      catch (e) { throw new Error("not JSON: " + resp.text.slice(0, 120)); }
+
+      const rows = Array.isArray(data) ? data
+                 : (data.volunteers || data.data || data.rows || null);
+      if (!Array.isArray(rows)){
+        throw new Error("no array in response: " + resp.text.slice(0, 140));
+      }
+      return { rows, label: attempt.label };
+    });
+}
+
+function loadVolunteers(){
+  const tbody = document.getElementById("volunteerTableBody");
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">Loading...</td></tr>';
+
+  const errors = [];
+  const tryNext = (i) => {
+    if (i >= ATTEMPTS.length) {
+      return Promise.reject(new Error("All request shapes failed. " + errors.join(" | ")));
+    }
+    return fetchAttempt(ATTEMPTS[i])
+      .then(r => (r.rows.length > 0 || i === ATTEMPTS.length - 1) ? r : tryNext(i + 1))
+      .catch(err => { errors.push(ATTEMPTS[i].label + " → " + err.message); return tryNext(i + 1); });
+  };
+
+  tryNext(0)
+    .then(({ rows, label }) => {
+      rawVolunteers = rows;
+
+      if (rows.length === 0){
+        setDiag("warn", "Endpoint answered, but returned zero volunteers.", {
+          dGet: "OK", dMode: label, dRows: "0",
+          dKeys: "(no records to inspect)", dMap: "—", dNoName: "—", dDupes: "—"
+        });
+        openDiag();
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">No volunteers found.</td></tr>';
+        document.getElementById("volunteerCount").textContent = "Showing 0 volunteers";
+        document.getElementById("roleSummary").innerHTML = "";
+        return;
+      }
+
+      const sample = rows[0];
+      RESOLVED_MAP = {
+        Name:   pick(sample, NAME_KEYS).column   || "NOT FOUND",
+        Mobile: pick(sample, MOBILE_KEYS).column || "NOT FOUND",
+        Grade:  pick(sample, GRADE_KEYS).column  || "NOT FOUND",
+        Role:   pick(sample, ROLE_KEYS).column   || "NOT FOUND",
+        Events: pick(sample, EVENT_KEYS).column  || "NOT FOUND"
+      };
+
+      const noName = rows.filter(r => getName(r) === "—").length;
+
+      const seen = {}, dupes = [];
+      rows.forEach(r => {
+        const d = mobileDigits(r);
+        if (!d) return;
+        if (seen[d] && dupes.indexOf(d) === -1) dupes.push(d);
+        seen[d] = true;
+      });
+      DUPLICATE_MOBILES = dupes;
+
+      const missing = Object.keys(RESOLVED_MAP).filter(k => RESOLVED_MAP[k] === "NOT FOUND");
+      let level = "ok";
+      let headline = "Connected. All five fields resolved.";
+      if (missing.length > 0){
+        level = "fail";
+        headline = "Connected, but these fields are missing from the API response: " + missing.join(", ")
+                 + ". The fix is in the Apps Script, not this page.";
+      } else if (dupes.length > 0 || noName > 0){
+        level = "warn";
+        headline = "Connected. " + (dupes.length ? dupes.length + " duplicate mobile number(s). " : "")
+                 + (noName ? noName + " row(s) with no name. " : "");
+      }
+
+      setDiag(level, headline, {
+        dGet: "OK (" + rows.length + " records)",
+        dMode: label,
+        dRows: String(rows.length),
+        dKeys: Object.keys(sample).filter(k => k !== "__idx").join(", "),
+        dMap: Object.keys(RESOLVED_MAP).map(k => k + " ← " + RESOLVED_MAP[k]).join("   |   "),
+        dNoName: String(noName),
+        dDupes: dupes.length === 0 ? "none" : dupes.join(", ")
+      });
+      if (level !== "ok") openDiag();
+
+      populateDropdowns(rows);
+      applyFilterAndSort();
+    })
+    .catch(err => {
+      console.error("Error loading volunteers:", err);
+      setDiag("fail", "Cannot read the volunteer sheet. This is a backend or deployment problem.", {
+        dGet: "FAILED — " + err.message,
+        dMode: "none succeeded", dRows: "—", dKeys: "—", dMap: "—", dNoName: "—", dDupes: "—"
+      });
+      openDiag();
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--cube-red);padding:20px;">'
+        + esc(err.message) + '</td></tr>';
+    });
+}
+
+/* =====================================================================
+   DROPDOWNS
+   ===================================================================== */
+function populateDropdowns(data){
+  const roleSelect  = document.getElementById("roleFilter");
+  const scrSelect   = document.getElementById("scrambleFilter");
+  const gradeSelect = document.getElementById("gradeFilter");
+  const prev = { r: roleSelect.value, s: scrSelect.value, g: gradeSelect.value };
+
+  const roles = new Set(), events = new Set(), grades = new Set();
+  data.forEach(item => {
+    getRoles(item).forEach(r => roles.add(r));
+    getEvents(item).forEach(e => events.add(e));
+    const g = getGrade(item);
+    if (g && g !== "—") grades.add(g);
+  });
+
+  const opts = set => Array.from(set).sort((a,b) => a.localeCompare(b, undefined, {numeric:true}))
+    .map(v => '<option value="' + esc(v) + '">' + esc(v) + '</option>').join("");
+
+  roleSelect.innerHTML  = '<option value="ALL">All Roles</option>' + opts(roles);
+  scrSelect.innerHTML   = '<option value="ALL">All Events / Specialties</option>' + opts(events);
+  gradeSelect.innerHTML = '<option value="ALL">All Grades</option>' + opts(grades);
+
+  if (roles.has(prev.r))  roleSelect.value  = prev.r;
+  if (events.has(prev.s)) scrSelect.value   = prev.s;
+  if (grades.has(prev.g)) gradeSelect.value = prev.g;
+
+  renderRoleSummary(data, roles);
+}
+
+function renderRoleSummary(data, roles){
+  const counts = {};
+  Array.from(roles).forEach(r => counts[r] = 0);
+  data.forEach(v => getRoles(v).forEach(r => { counts[r] = (counts[r] || 0) + 1; }));
+
+  document.getElementById("roleSummary").innerHTML =
+    '<div class="role-chip"><div class="role-chip-name">Total Volunteers</div>'
+    + '<div class="role-chip-num">' + data.length + '</div></div>'
+    + Object.keys(counts).sort().map(r =>
+        '<div class="role-chip"><div class="role-chip-name">' + esc(r) + '</div>'
+        + '<div class="role-chip-num">' + counts[r] + '</div></div>').join("");
+}
+
+/* =====================================================================
+   FILTER + SORT
+   Role matching is now exact per token. The old code used
+   role.includes(roleFilter), so filtering to "Judge" also returned every
+   "Judging" volunteer, and "Scrambl" would have matched both.
+   ===================================================================== */
+function applyFilterAndSort(){
+  const roleFilter  = document.getElementById("roleFilter").value;
+  const scrFilter   = document.getElementById("scrambleFilter").value;
+  const gradeFilter = document.getElementById("gradeFilter").value;
+  const sortBy      = document.getElementById("sortBy").value;
+  const q           = document.getElementById("searchInput").value.toLowerCase().trim();
+
+  const filtered = rawVolunteers.filter(row => {
+    const roles  = getRoles(row).map(r => r.toLowerCase());
+    const events = getEvents(row).map(e => e.toLowerCase());
+    const grade  = getGrade(row);
+
+    const matchRole  = roleFilter  === "ALL" || roles.indexOf(roleFilter.toLowerCase()) !== -1;
+    const matchScr   = scrFilter   === "ALL" || events.indexOf(scrFilter.toLowerCase()) !== -1;
+    const matchGrade = gradeFilter === "ALL" || grade.toLowerCase() === gradeFilter.toLowerCase();
+
+    const matchSearch = !q
+      || getName(row).toLowerCase().includes(q)
+      || getMobile(row).toLowerCase().includes(q)
+      || mobileDigits(row).includes(q.replace(/\D/g, ""))
+      || grade.toLowerCase().includes(q)
+      || roles.join(" ").includes(q)
+      || events.join(" ").includes(q);
+
+    return matchRole && matchScr && matchGrade && matchSearch;
+  });
+
+  const byName = (a,b) => getName(a).localeCompare(getName(b));
+  filtered.sort((a,b) => {
+    const rA = getRoles(a).join(", ").toLowerCase(), rB = getRoles(b).join(", ").toLowerCase();
+    const eA = getEvents(a).join(", ").toLowerCase(), eB = getEvents(b).join(", ").toLowerCase();
+
+    if (sortBy === "Role-then-Specialty"){
+      const c = rA.localeCompare(rB); if (c !== 0) return c;
+      const d = eA.localeCompare(eB); if (d !== 0) return d;
+      return byName(a,b);
+    }
+    if (sortBy === "Specialty-then-Role"){
+      const c = eA.localeCompare(eB); if (c !== 0) return c;
+      const d = rA.localeCompare(rB); if (d !== 0) return d;
+      return byName(a,b);
+    }
+    if (sortBy === "Grade-asc"){
+      const c = getGrade(a).localeCompare(getGrade(b), undefined, {numeric:true});
+      return c !== 0 ? c : byName(a,b);
+    }
+    return byName(a,b);
+  });
+
+  document.getElementById("volunteerCount").textContent =
+    "Showing " + filtered.length + " of " + rawVolunteers.length + " volunteers";
+  renderTable(filtered);
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+function renderTable(records){
+  const tbody = document.getElementById("volunteerTableBody");
+  if (records.length === 0){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim);">No matching volunteers found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = records.map(row => {
+    const name   = getName(row);
+    const mobile = getMobile(row);
+    const digits = mobileDigits(row);
+    const grade  = getGrade(row);
+    const roles  = getRoles(row);
+    const events = getEvents(row);
+    const isDupe = digits && DUPLICATE_MOBILES.indexOf(digits) !== -1;
+
+    const roleHtml = roles.length
+      ? roles.map(r => '<span class="badge badge-role">' + esc(r) + '</span>').join(" ")
+      : '<span style="color:var(--text-dim);">—</span>';
+
+    const eventHtml = events.length
+      ? events.map(e => '<span class="badge badge-event">' + esc(e) + '</span>').join(" ")
+      : '<span style="color:var(--text-dim);">—</span>';
+
+    // digits-only href, so a number stored as "98765 43210" still dials
+    const phoneHtml = digits
+      ? '<a href="tel:' + esc(digits) + '" class="phone-link">📞 ' + esc(mobile) + '</a>'
+      : '<span style="color:var(--text-dim);">—</span>';
+
+    const mobileWarn = (digits && digits.length < 10)
+      ? '<span class="row-note">⚠ only ' + digits.length + ' digits</span>' : '';
+
+    return '<tr class="' + (isDupe ? "flagged" : "") + '">'
+      + '<td><b>' + esc(name) + '</b>'
+        + (isDupe ? '<span class="row-note">⚠ duplicate mobile</span>' : '') + '</td>'
+      + '<td>' + phoneHtml + mobileWarn + '</td>'
+      + '<td>' + esc(grade) + '</td>'
+      + '<td>' + roleHtml + '</td>'
+      + '<td>' + eventHtml + '</td>'
+      + '</tr>';
+  }).join("");
+}
+
+/* =====================================================================
+   CSV EXPORT (for printing a call sheet on the day)
+   ===================================================================== */
+function exportCsv(){
+  const q = s => '"' + String(s).replace(/"/g, '""') + '"';
+  const lines = [["Name","Mobile","Grade","Role","Scrambling Events"].map(q).join(",")];
+  rawVolunteers.forEach(r => {
+    lines.push([getName(r), getMobile(r), getGrade(r),
+                getRoles(r).join(" / "), getEvents(r).join(" / ")].map(q).join(","));
+  });
+  const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "volunteers.csv";
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(a.href);
+}
+
+/* =====================================================================
+   WIRING
+   ===================================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  ["roleFilter","scrambleFilter","gradeFilter","sortBy"].forEach(id =>
+    document.getElementById(id).addEventListener("change", applyFilterAndSort));
+  document.getElementById("searchInput").addEventListener("input", applyFilterAndSort);
+  document.getElementById("btnRefresh").addEventListener("click", loadVolunteers);
+  document.getElementById("btnExport").addEventListener("click", exportCsv);
+  loadVolunteers();
+});
+</script>
+</body>
+</html>

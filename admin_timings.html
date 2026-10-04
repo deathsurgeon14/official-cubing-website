@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Save Timings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12172B;
+    --paper:#F6F4EF;
+    --paper-dim:#EAE7DD;
+    --cube-blue:#1758C4;
+    --line:#D9D5C8;
+    --text-dim:#6B7280;
+    --error:#C0392B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;padding:30px 20px;}
+  .wrap{max-width:500px;margin:0 auto;}
+  header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:24px;}
+  .back-link{color:var(--text-dim);text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .back-link:hover{color:var(--ink);}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;}
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--text-dim);margin-bottom:4px;}
+  .form-group input, .form-group select{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;font-size:14px;font-family:'Inter',sans-serif;
+  }
+  .form-group input.invalid{border-color:var(--error);background:#FDF1EF;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .form-row-3.two-solve{grid-template-columns:1fr 1fr;}
+  .btn-submit{
+    background:var(--cube-blue);color:#fff;width:100%;padding:12px;font-size:14px;
+    border-radius:8px;border:none;font-weight:600;font-family:'IBM Plex Mono',monospace;cursor:pointer;
+  }
+  .btn-submit:hover{opacity:0.9;}
+  .hint{font-size:11.5px;color:var(--text-dim);margin-top:6px;line-height:1.4;}
+  .hint.error{color:var(--error);}
+  .refresh-btn{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--cube-blue);
+    background:none;border:none;cursor:pointer;padding:0;
+  }
+  .refresh-btn:hover{text-decoration:underline;}
+  .refresh-btn:disabled{opacity:0.5;cursor:not-allowed;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Submit Solves &amp; Timing</h1>
+    <a href="admin_home.html" class="back-link">&larr; Back to Home</a>
+  </header>
+  <div class="card">
+    <form id="timingForm" onsubmit="submitTimings(event)">
+      <!-- Station Number & Grade Row -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Station Number</label>
+          <select id="stationNum" required>
+            <option value="" disabled selected>Select station…</option>
+            <option value="1">Station 1</option>
+            <option value="2">Station 2</option>
+            <option value="3">Station 3</option>
+            <option value="4">Station 4</option>
+            <option value="5">Station 5</option>
+            <option value="6">Station 6</option>
+            <option value="7">Station 7</option>
+            <option value="8">Station 8</option>
+            <option value="9">Station 9</option>
+            <option value="10">Station 10</option>
+            <option value="11">Station 11</option>
+            <option value="12">Station 12</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Grade</label>
+          <select id="gradeSelect" onchange="updateEventAvailability()" required>
+            <optgroup label="Age Group: Grades 5–6">
+              <option value="Grade 5">Grade 5</option>
+              <option value="Grade 6">Grade 6</option>
+            </optgroup>
+            <optgroup label="Age Group: Grades 7–9">
+              <option value="Grade 7">Grade 7</option>
+              <option value="Grade 8">Grade 8</option>
+              <option value="Grade 9">Grade 9</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Event</label>
+        <select id="eventSelect" onchange="updateRoundOptions()">
+          <option value="3x3">3x3</option>
+          <option value="2x2">2x2</option>
+          <option value="Pyraminx">Pyraminx</option>
+          <option value="4x4">4x4</option>
+          <option value="Megaminx">Megaminx</option>
+        </select>
+        <div class="hint">Megaminx and 4x4 are only open to Grades 7–9.</div>
+      </div>
+      <div class="form-group">
+        <label>Round</label>
+        <select id="roundSelect" onchange="toggleStageField(); prefillExistingSolves();">
+          <!-- Dynamically populated -->
+        </select>
+      </div>
+      <div class="form-group" id="stageGroup" style="display:none;">
+        <label>Knockout Match</label>
+        <select id="stageSelect" onchange="prefillExistingSolves()">
+          <!-- Populated for knockout Finals: 3x3 (5–6, 7–9) and 2x2 (5–6) -->
+        </select>
+        <div class="hint" id="stageHint"></div>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Competitor</span>
+          <button type="button" id="refreshCompBtn" class="refresh-btn" onclick="fetchRegisteredCompetitors()">&#8635; Refresh</button>
+        </label>
+        <select id="competitorSelect" required onchange="onCompetitorChange()">
+          <option value="">Loading competitors…</option>
+        </select>
+        <div class="hint" id="competitorHint">Only paid competitors registered for the selected grade &amp; event show up here. Just marked someone paid? Hit Refresh.</div>
+      </div>
+      <div class="form-group">
+        <label>Solves (seconds like 14.52, or 1:05.20, or DNF)</label>
+        <div class="form-row-3" id="solvesRow">
+          <input type="text" inputmode="decimal" autocomplete="off" id="s1" placeholder="S1">
+          <input type="text" inputmode="decimal" autocomplete="off" id="s2" placeholder="S2">
+          <input type="text" inputmode="decimal" autocomplete="off" id="s3" placeholder="S3">
+        </div>
+        <div class="hint" id="solvesHint" style="display:none;"></div>
+      </div>
+      <div class="form-group">
+        <label>Round Status</label>
+        <select id="statusSelect">
+          <option value="Complete">Complete (Finished)</option>
+          <option value="Live">Live (Ongoing)</option>
+          <option value="Upcoming">Upcoming</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-submit" id="saveBtn">Save Timings</button>
+    </form>
+  </div>
+</div>
+<script>
+  // DEPLOYED URL FOR YOUR RESULTS SPREADSHEET APPS SCRIPT
+  const RESULTS_API_URL = "https://script.google.com/macros/s/AKfycbwRzpzNMKGX-Cd9Xoosy8WNbwj6NiVGAzoD6AJgCH-dSb39CQvDBbthAO10rzO7Hllq/exec";
+  // Same registrations endpoint the "Mark as Paid" admin page uses; feeds the Competitor dropdown.
+  const REGISTRATION_API_URL = "https://script.google.com/macros/s/AKfycbyBZ_xge06xvF4sdKAndQKwtQlAhZjvHjl4HgF_1iGvCYzXD4uruJpk01D95D-ASHW7/exec";
+
+  // ---------- Competition structure (must match results.html) ----------
+  const EVENT_ROUNDS = {
+    "3x3": ["First Round", "Second Round", "Third Round", "Final"],
+    "2x2": ["First Round", "Second Round", "Final"],
+    "Pyraminx": ["First Round", "Second Round", "Final"],
+    "4x4": ["Final"],
+    "Megaminx": ["Final"]
+  };
+
+  function getRounds(eventName, ageGroup) {
+    return EVENT_ROUNDS[eventName] || ["Final"];
+  }
+
+  // Knockout ONLY for the 3x3 / 2x2 Final, Grades 5–6 (4-competitor bracket).
+  // Every other round, including the Grades 7–9 Finals, is a normal ranked round.
+  // Knockout Finals (event -> age group -> bracket size). Must match results.html.
+  const KNOCKOUT_BRACKETS = {
+    "3x3": { "5-6": 4, "7-9": 8 },
+    "2x2": { "5-6": 4 }
+  };
+  const KNOCKOUT_ROUND_NAME = "Final";
+  const KNOCKOUT_STAGES_4 = ["Semifinal 1", "Semifinal 2", "Championship", "3rd Place Match"];
+  const KNOCKOUT_STAGES_8 = ["Quarterfinal 1", "Quarterfinal 2", "Quarterfinal 3", "Quarterfinal 4"].concat(KNOCKOUT_STAGES_4);
+  function currentBracketSize() {
+    const ev = document.getElementById("eventSelect").value;
+    const group = ageGroupForGrade(document.getElementById("gradeSelect").value);
+    return (KNOCKOUT_BRACKETS[ev] && KNOCKOUT_BRACKETS[ev][group]) || 0;
+  }
+
+  const TWO_SOLVE_EVENTS = ["Megaminx", "4x4"];
+  const RESTRICTED_FOR_5_6 = ["Megaminx", "4x4"];
+
+  function gradeDigit(g) {
+    const m = String(g).match(/\d+/);
+    return m ? m[0] : null;
+  }
+  function ageGroupForGrade(grade) {
+    const n = parseInt(gradeDigit(grade), 10);
+    return (n === 5 || n === 6) ? "5-6" : "7-9";
+  }
+  function isKnockoutSelection() {
+    const ev = document.getElementById("eventSelect").value;
+    const round = document.getElementById("roundSelect").value;
+    const group = ageGroupForGrade(document.getElementById("gradeSelect").value);
+    return round === KNOCKOUT_ROUND_NAME && currentBracketSize() > 0;
+  }
+  function isTwoSolveEvent() {
+    return TWO_SOLVE_EVENTS.includes(document.getElementById("eventSelect").value);
+  }
+
+  // ---------- Solve parsing ----------
+  // Accepts "14.52", "65.2", "1:05.20", "DNF", "DNS". Stored as plain seconds
+  // ("65.20") so Google Sheets never auto-converts it into a clock time.
+  function parseSolveInput(raw) {
+    const s = String(raw || "").trim().toUpperCase();
+    if (s === "" || s === "-") return { empty: true };
+    if (s === "DNF" || s === "DNS") return { text: s, secs: Infinity, dnf: true };
+    let secs = NaN;
+    const mmss = s.match(/^(\d+):(\d{1,2}(?:\.\d+)?)$/);
+    if (mmss && parseFloat(mmss[2]) < 60) secs = parseInt(mmss[1], 10) * 60 + parseFloat(mmss[2]);
+    else if (/^\d+(\.\d*)?$/.test(s)) secs = parseFloat(s);
+    if (!(secs > 0)) return { invalid: true };
+    return { text: secs.toFixed(2), secs: secs };
+  }
+
+  function solveInputs() {
+    const ids = isTwoSolveEvent() ? ["s1", "s2"] : ["s1", "s2", "s3"];
+    return ids.map(id => document.getElementById(id));
+  }
+
+  // ---------- Live pre-fill of already-entered solves ----------
+  let allResultsData = [];
+
+  function fetchExistingResults(callback) {
+    fetch(RESULTS_API_URL)
+      .then(res => res.json())
+      .then(data => { allResultsData = data.results || []; })
+      .catch(err => { console.error("Error fetching existing results:", err); })
+      .finally(() => { if (callback) callback(); });
+  }
+
+  // Same Round tag submitTimings() sends (e.g. "Final — 5-6 — Semifinal 1")
+  function currentRoundTag() {
+    const roundVal = document.getElementById("roundSelect").value;
+    const stageVal = document.getElementById("stageSelect").value;
+    const ageGroup = ageGroupForGrade(document.getElementById("gradeSelect").value);
+    return isKnockoutSelection() && stageVal ? `${roundVal} — ${ageGroup} — ${stageVal}` : roundVal;
+  }
+
+  function findExistingResultRow() {
+    const compSel = document.getElementById("competitorSelect");
+    const compId = compSel.value;
+    if (!compId) return null;
+    const eventSel = document.getElementById("eventSelect").value;
+    const roundTag = currentRoundTag();
+    const compName = compSel.selectedOptions[0] ? compSel.selectedOptions[0].dataset.name : "";
+    return allResultsData.find(r =>
+      (String(r.CompetitorID) === String(compId) || (compName && r.Name === compName)) &&
+      r.Event === eventSel &&
+      r.Round === roundTag
+    ) || null;
+  }
+
+  const savedVal = (v) => (v !== undefined && v !== null && String(v).trim() !== "" && String(v).trim() !== "-") ? String(v).trim() : "";
+
+  function prefillExistingSolves() {
+    const s1El = document.getElementById("s1");
+    const s2El = document.getElementById("s2");
+    const s3El = document.getElementById("s3");
+    const hintEl = document.getElementById("solvesHint");
+    [s1El, s2El, s3El].forEach(el => el.classList.remove("invalid"));
+    hintEl.classList.remove("error");
+
+    if (!document.getElementById("competitorSelect").value) {
+      s1El.value = ""; s2El.value = ""; s3El.value = "";
+      hintEl.style.display = "none";
+      return;
+    }
+
+    const existing = findExistingResultRow();
+    s1El.value = existing ? savedVal(existing.Solve1) : "";
+    s2El.value = existing ? savedVal(existing.Solve2) : "";
+    s3El.value = existing ? savedVal(existing.Solve3) : "";
+
+    if (existing && (s1El.value || s2El.value || s3El.value)) {
+      const stationNote = existing.Station ? ` (last entered at Station ${existing.Station})` : "";
+      hintEl.innerText = `Existing solves for this round were loaded${stationNote}. Add the next one and Save to update.`;
+      hintEl.style.display = "block";
+    } else {
+      hintEl.style.display = "none";
+    }
+  }
+
+  function onCompetitorChange() {
+    fetchExistingResults(prefillExistingSolves);
+  }
+
+  // ---------- Competitor picker ----------
+  let allRegisteredCompetitors = [];
+
+  function normalizeRegistration(c) {
+    return {
+      compId: c.compId || c.id || c.ID || c.CompetitorID || "—",
+      name: c.name || c.fullName || c.Name || "—",
+      grade: c.ageGroup || c.grade || c.gradeLevel || c.Grade || "",
+      events: String(c.events || c.scrambleEvents || c.Events || c.Event || c.SelectedEvents || ""),
+      paymentStatus: String(c.PaymentStatus || c["Payment Status"] || c.paymentStatus || c.FeeStatus || c.feeStatus || "Pending")
+    };
+  }
+  function hasEvent(c, key) {
+    return c.events.split(",").map(e => e.trim().toLowerCase()).includes(key.toLowerCase());
+  }
+  function escAttr(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
+  function fetchRegisteredCompetitors() {
+    const refreshBtn = document.getElementById("refreshCompBtn");
+    if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.innerText = "Refreshing…"; }
+    fetch(`${REGISTRATION_API_URL}?action=registrations`)
+      .then(res => res.json())
+      .then(data => {
+        const rows = Array.isArray(data) ? data : (data.data || []);
+        allRegisteredCompetitors = rows.map(normalizeRegistration);
+        populateCompetitorDropdown();
+      })
+      .catch(err => {
+        console.error("Error loading registered competitors:", err);
+        document.getElementById("competitorSelect").innerHTML =
+          `<option value="">Failed to load competitor list</option>`;
+      })
+      .finally(() => {
+        if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.innerText = "↻ Refresh"; }
+      });
+  }
+
+  function populateCompetitorDropdown() {
+    const sel = document.getElementById("competitorSelect");
+    const grade = document.getElementById("gradeSelect").value;
+    const eventSel = document.getElementById("eventSelect").value;
+    const gradeDig = gradeDigit(grade);
+
+    if (allRegisteredCompetitors.length === 0) {
+      sel.innerHTML = `<option value="">Loading competitors…</option>`;
+      prefillExistingSolves();
+      return;
+    }
+
+    const eligible = allRegisteredCompetitors
+      .filter(c => ["paid", "yes", "true"].includes(c.paymentStatus.toLowerCase()))
+      .filter(c => gradeDigit(c.grade) === gradeDig)
+      .filter(c => hasEvent(c, eventSel))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (eligible.length === 0) {
+      sel.innerHTML = `<option value="">No paid ${grade} competitors registered for ${eventSel}</option>`;
+      prefillExistingSolves();
+      return;
+    }
+
+    sel.innerHTML = `<option value="" disabled selected>Select competitor…</option>` +
+      eligible.map(c => `<option value="${escAttr(c.compId)}" data-name="${escAttr(c.name)}">${escAttr(c.name)} (${escAttr(c.compId)})</option>`).join("");
+    prefillExistingSolves();
+  }
+
+  // Grades 5–6 don't run Megaminx or 4x4
+  function updateEventAvailability() {
+    const group = ageGroupForGrade(document.getElementById("gradeSelect").value);
+    const restricted = group === "5-6";
+    const eventSel = document.getElementById("eventSelect");
+    Array.from(eventSel.options).forEach(opt => {
+      opt.disabled = restricted && RESTRICTED_FOR_5_6.includes(opt.value);
+    });
+    if (restricted && RESTRICTED_FOR_5_6.includes(eventSel.value)) eventSel.value = "3x3";
+    updateRoundOptions();
+  }
+
+  function updateRoundOptions() {
+    const eventSel = document.getElementById("eventSelect").value;
+    const group = ageGroupForGrade(document.getElementById("gradeSelect").value);
+    const roundSel = document.getElementById("roundSelect");
+    const prev = roundSel.value;
+    const rounds = getRounds(eventSel, group);
+    roundSel.innerHTML = rounds.map(r => `<option value="${r}">${r}</option>`).join("");
+    if (rounds.includes(prev)) roundSel.value = prev;
+    updateSolveFields();
+    toggleStageField();
+    populateCompetitorDropdown();
+  }
+
+  // Megaminx / 4x4 are 2-solve events: hide Solve 3
+  function updateSolveFields() {
+    const two = isTwoSolveEvent();
+    const s3 = document.getElementById("s3");
+    s3.style.display = two ? "none" : "";
+    if (two) s3.value = "";
+    document.getElementById("solvesRow").classList.toggle("two-solve", two);
+  }
+
+  function toggleStageField() {
+    const stageGroup = document.getElementById("stageGroup");
+    const stageSelect = document.getElementById("stageSelect");
+    const stageHint = document.getElementById("stageHint");
+    if (isKnockoutSelection()) {
+      const prev = stageSelect.value;
+      stageGroup.style.display = "block";
+      const size = currentBracketSize();
+      const stages = size === 8 ? KNOCKOUT_STAGES_8 : KNOCKOUT_STAGES_4;
+      stageSelect.innerHTML = stages.map(s => `<option value="${s}">${s}</option>`).join("");
+      if (stages.includes(prev)) stageSelect.value = prev;
+      stageHint.innerText = (size === 8
+        ? "8-competitor bracket: QF1 #1 v #8, QF2 #4 v #5, QF3 #2 v #7, QF4 #3 v #6. Then Semifinals, Championship and 3rd Place."
+        : "4-competitor bracket: SF1 #1 v #4, SF2 #2 v #3. Then Championship and 3rd Place.")
+        + " Submit once per competitor: enter both players' solves separately for the same match.";
+    } else {
+      stageGroup.style.display = "none";
+      stageSelect.innerHTML = "";
+    }
+  }
+
+  function submitTimings(e) {
+    e.preventDefault();
+    const competitorSelect = document.getElementById("competitorSelect");
+    const compId = competitorSelect.value;
+    if (!compId) { alert("Select a competitor first."); return; }
+    const compName = competitorSelect.selectedOptions[0].dataset.name;
+
+    // Parse and validate solves
+    const inputs = solveInputs();
+    const parsed = inputs.map(el => parseSolveInput(el.value));
+    let bad = false;
+    inputs.forEach((el, i) => {
+      el.classList.toggle("invalid", !!parsed[i].invalid);
+      if (parsed[i].invalid) bad = true;
+    });
+    if (bad) {
+      const hint = document.getElementById("solvesHint");
+      hint.innerText = "Enter times as 14.52 or 1:05.20, or type DNF.";
+      hint.classList.add("error");
+      hint.style.display = "block";
+      return;
+    }
+    const [p1, p2, p3] = [parsed[0], parsed[1], parsed[2] || { empty: true }];
+
+    // Don't silently wipe a solve that's already saved
+    const existingRow = findExistingResultRow();
+    if (existingRow) {
+      const wiped = [];
+      if (savedVal(existingRow.Solve1) && p1.empty) wiped.push(`Solve 1 (${existingRow.Solve1})`);
+      if (savedVal(existingRow.Solve2) && p2.empty) wiped.push(`Solve 2 (${existingRow.Solve2})`);
+      if (!isTwoSolveEvent() && savedVal(existingRow.Solve3) && p3.empty) wiped.push(`Solve 3 (${existingRow.Solve3})`);
+      if (wiped.length > 0) {
+        const proceed = confirm(
+          `This competitor already has ${wiped.join(", ")} saved for this round, but the form is about to submit ` +
+          `that as blank. Saving now will erase it. Continue anyway?`
+        );
+        if (!proceed) return;
+      }
+    }
+
+    // Best = fastest valid solve. All entered solves DNF -> "DNF". Nothing entered -> blank.
+    const entered = parsed.filter(p => !p.empty);
+    const valid = entered.filter(p => !p.dnf);
+    const best = valid.length ? Math.min(...valid.map(p => p.secs)).toFixed(2)
+               : entered.length ? "DNF" : "";
+
+    // Average (Ao3 events only): shown once all 3 solves are in; any DNF makes it DNF.
+    let avg = "";
+    if (!isTwoSolveEvent() && entered.length === 3) {
+      avg = entered.some(p => p.dnf) ? "DNF" : (entered.reduce((a, p) => a + p.secs, 0) / 3).toFixed(2);
+    }
+
+    const btn = document.getElementById("saveBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const payload = {
+      action: "submitResult",
+      Station: document.getElementById("stationNum").value,
+      Event: document.getElementById("eventSelect").value,
+      Round: currentRoundTag(),
+      Rank: "",
+      CompetitorID: compId,
+      Name: compName,
+      Grade: document.getElementById("gradeSelect").value,
+      Solve1: p1.empty ? "" : p1.text,
+      Solve2: p2.empty ? "" : p2.text,
+      Solve3: (isTwoSolveEvent() || p3.empty) ? "" : p3.text,
+      Average: avg,
+      Best: best,
+      Status: document.getElementById("statusSelect").value
+    };
+
+    fetch(RESULTS_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(res => {
+      btn.disabled = false;
+      btn.innerText = "Save Timings";
+      if (res.success || res.status === "success") {
+        alert("Timing saved successfully!");
+        // Keep Station / Grade / Event / Round / Match so the next competitor is quick to enter
+        competitorSelect.selectedIndex = 0;
+        ["s1", "s2", "s3"].forEach(id => { document.getElementById(id).value = ""; });
+        document.getElementById("solvesHint").style.display = "none";
+        fetchExistingResults();
+      } else {
+        alert("Error saving timings: " + (res.error || res.message || "Unknown error"));
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = "Save Timings";
+      console.error("Error submitting timing:", err);
+      alert("Failed to submit timings to backend.");
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    updateEventAvailability();
+    fetchRegisteredCompetitors();
+    fetchExistingResults();
+  });
+</script>
+</body>
+</html>

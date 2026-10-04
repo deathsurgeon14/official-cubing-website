@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Results — FKS Cubing Open 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12172B;
+    --paper:#F6F4EF;
+    --paper-dim:#EAE7DD;
+    --cube-red:#E6402A;
+    --line:#D9D5C8;
+    --text-dim:#6B7280;
+    --qualify-green:#1F9D55;
+    --qualify-bg:#E6F5EC;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(246,244,239,0.9);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1120px;margin:0 auto;padding:16px 28px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.01em;}
+  .logo-mark{
+    height:36px;width:auto;flex-shrink:0;
+  }
+  footer .logo-mark{
+    filter:brightness(0) invert(1);
+  }
+  .nav-links{display:flex;align-items:center;gap:28px;font-size:14.5px;font-weight:500;}
+  .nav-links .active{position:relative;}
+  .nav-links .active::after{
+    content:"";position:absolute;left:0;right:0;bottom:-19px;height:2px;background:var(--ink);
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px;
+    border:1px solid transparent;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--ink);color:var(--paper);}
+  .btn-primary:hover{box-shadow:0 6px 16px rgba(18,23,43,0.3);}
+  .btn-outline{border-color:var(--ink);}
+  .btn-solid-red{background:var(--cube-red);color:#fff;}
+  .btn-solid-red:hover{box-shadow:0 6px 16px rgba(230,64,42,0.35);}
+  .nav-cta{display:flex;gap:10px;align-items:center;}
+  .results-caret{font-size:11px;opacity:.6;margin-left:2px;}
+
+  /* ---------- PAGE HEADER ---------- */
+  .page-header{
+    background:radial-gradient(120% 140% at 15% 0%, #202749 0%, var(--ink) 55%, #0C1022 100%);
+    color:var(--paper);padding:48px 0 36px;
+  }
+  .header-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between;}
+  .header-left{display:flex;align-items:center;gap:16px;}
+  .event-badge{
+    width:52px;height:52px;border-radius:13px;background:var(--cube-red);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:#fff;
+  }
+  .event-badge svg{display:block;}
+  .page-header h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(26px,4vw,36px);}
+  .page-header .sub{color:rgba(246,244,239,0.65);font-size:14px;margin-top:4px;}
+  .event-nav{display:flex;gap:8px;flex-wrap:wrap;}
+  .event-pill{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 14px;border-radius:999px;
+    border:1px solid rgba(246,244,239,0.25);color:rgba(246,244,239,0.65);cursor:pointer;
+    background:transparent;
+  }
+  .event-pill.current{background:var(--cube-red);border-color:var(--cube-red);color:#fff;}
+  .live-badge{
+    display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;
+    font-weight:600;color:var(--cube-red);background:rgba(230,64,42,0.12);padding:4px 10px;border-radius:999px;
+    margin-left:10px;
+  }
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--cube-red);animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%{opacity:1;}50%{opacity:0.3;}100%{opacity:1;}}
+
+  /* ---------- ROUND TABS ---------- */
+  .results-section{padding:40px 0 24px;}
+  .age-group-tabs{display:flex;gap:8px;margin-bottom:14px;}
+  .agegroup-pill{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:7px 14px;border-radius:999px;
+    border:1px solid var(--line);color:var(--text-dim);cursor:pointer;background:#fff;
+  }
+  .agegroup-pill.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+  .round-tabs{display:flex;gap:8px;margin-bottom:26px;border-bottom:1px solid var(--line);}
+  .round-tab{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;
+    padding:11px 6px;color:var(--text-dim);cursor:pointer;position:relative;background:none;border:none;
+    margin-right:22px;
+  }
+  .round-tab.active{color:var(--ink);}
+  .round-tab.active::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--cube-red);
+  }
+
+  /* ---------- ADVANCEMENT NOTE ---------- */
+  .advance-note{
+    display:none;align-items:center;gap:8px;margin:-10px 0 14px;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--qualify-green);font-weight:600;
+  }
+  .advance-note .swatch{width:12px;height:12px;border-radius:3px;background:var(--qualify-bg);border:2px solid var(--qualify-green);}
+
+  /* ---------- TABLE ---------- */
+  .results-table-wrap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{
+    text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--text-dim);padding:13px 16px;border-bottom:1px solid var(--line);background:var(--paper-dim);
+  }
+  thead th.num{text-align:right;}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody td.num{text-align:right;font-family:'IBM Plex Mono',monospace;}
+  tbody td.best{font-weight:700;color:var(--cube-red);}
+  .rank-cell{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--text-dim);width:44px;}
+  tr.podium .rank-cell{color:var(--ink);}
+  tr.podium td{font-weight:600;}
+
+  /* Qualified-for-next-round rows */
+  tr.qualified td{background:var(--qualify-bg);}
+  tr.qualified td:first-child{box-shadow:inset 4px 0 0 var(--qualify-green);}
+  tr.qualified .rank-cell{color:var(--qualify-green);}
+  tr.awaiting strong{color:var(--text-dim);font-weight:500;}
+  .q-tag{
+    display:inline-block;margin-left:8px;padding:1px 6px;border-radius:4px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;
+    background:var(--qualify-green);color:#fff;vertical-align:middle;
+  }
+
+  .medal{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700;color:#fff;margin-right:6px;
+  }
+  .medal.gold{background:#C9971F;}
+  .medal.silver{background:#8A8F99;}
+  .medal.bronze{background:#A6643A;}
+  .grade-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-left:6px;}
+  .empty-msg{padding:24px;text-align:center;color:var(--text-dim);font-size:14px;}
+
+  /* ---------- KNOCKOUT BRACKET ---------- */
+  .bracket-wrap{background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px 24px;overflow-x:auto;}
+  .bracket{display:flex;gap:40px;min-width:740px;align-items:center;}
+  .bracket-round{display:flex;flex-direction:column;justify-content:space-around;gap:22px;flex:1;min-width:180px;}
+  .bracket-round-title{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);text-align:center;margin-bottom:4px;}
+  .match-card{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--paper-dim);}
+  .match-slot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line);}
+  .match-slot:last-child{border-bottom:none;}
+  .match-slot.winner{background:#fff;font-weight:700;color:var(--ink);}
+  .match-slot.winner .slot-time{color:var(--cube-red);}
+  .slot-time{font-family:'IBM Plex Mono',monospace;color:var(--text-dim);flex-shrink:0;}
+  .slot-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .champion-card{margin-top:16px;text-align:center;}
+  .champion-badge{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:999px;font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:13.5px;}
+  .bracket-note{text-align:center;color:var(--text-dim);font-size:12.5px;margin-top:22px;font-family:'IBM Plex Mono',monospace;}
+  .bracket-note strong{color:var(--ink);}
+  .bracket-legend{text-align:center;color:var(--text-dim);font-size:11px;margin-top:6px;font-family:'IBM Plex Mono',monospace;}
+  .slot-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .slot-solves{display:flex;gap:4px;margin-top:5px;}
+  .solve-chip{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 5px;border-radius:4px;background:#fff;color:var(--text-dim);border:1px solid var(--line);}
+  .match-slot.winner .solve-chip{background:#fff;}
+  .solve-chip.win{background:var(--cube-red);color:#fff;border-color:var(--cube-red);font-weight:700;}
+  .decided-by{font-size:10px;color:var(--text-dim);text-align:center;font-family:'IBM Plex Mono',monospace;padding:5px 0 1px;}
+  .match-slot.pending{justify-content:center;}
+  .match-slot.pending .slot-name{color:var(--text-dim);font-style:italic;font-size:12.5px;}
+  footer{background:var(--ink);color:rgba(246,244,239,0.65);padding:40px 0;font-size:13px;margin-top:60px;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <div class="logo">
+      <img class="logo-mark" src="FKS Logo.png" alt="FKS Logo">
+      FKS Cubing Open
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="competitions.html">Competitions</a>
+      <a href="schedule.html">Schedule</a>
+      <a href="overview.html">Overview</a>
+      <a href="#" class="active">Results</a>
+      <a href="login.html">Login</a>
+    </div>
+    <div class="nav-cta">
+      <a href="registration.html" class="btn btn-solid-red">Register</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="header-row">
+      <div class="header-left">
+        <div class="event-badge" id="currentBadge">3x3</div>
+        <div>
+          <h1 id="currentTitle">3x3 Cube <span id="liveStatusContainer"></span></h1>
+          <div class="sub">Live Competition Results</div>
+        </div>
+      </div>
+      <div class="event-nav">
+        <button class="event-pill current" onclick="switchEvent('3x3')">3x3</button>
+        <button class="event-pill" onclick="switchEvent('2x2')">2x2</button>
+        <button class="event-pill" onclick="switchEvent('Pyraminx')">Pyraminx</button>
+        <button class="event-pill" onclick="switchEvent('Megaminx')">Megaminx</button>
+        <button class="event-pill" onclick="switchEvent('4x4')">4x4</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap results-section">
+  <div class="age-group-tabs" id="ageGroupTabsContainer">
+    <!-- Dynamically populated age-group tabs -->
+  </div>
+  <div class="round-tabs" id="roundTabsContainer">
+    <!-- Dynamically populated round tabs -->
+  </div>
+  <div class="advance-note" id="advanceNote"></div>
+  <div class="results-table-wrap" id="resultsTableWrap">
+    <table id="resultsTable">
+      <thead id="resultsTableHead">
+        <!-- Dynamically rendered table headers -->
+      </thead>
+      <tbody id="resultsTableBody">
+        <tr><td colspan="7" class="empty-msg">Loading live results...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="bracket-wrap" id="bracketWrap" style="display:none;">
+    <div id="bracket"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>&copy; 2026 FKS Cubing Open. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  // DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+  const RESULTS_API_URL = "https://script.google.com/macros/s/AKfycbwRzpzNMKGX-Cd9Xoosy8WNbwj6NiVGAzoD6AJgCH-dSb39CQvDBbthAO10rzO7Hllq/exec";
+  // Registrations web app (the admin_mark_paid script). Paste its /exec URL here.
+  const REGISTRATIONS_API_URL = "PASTE_REGISTRATIONS_EXEC_URL_HERE";
+  const PARTICIPANTS_POLL_MS = 60000; // roster changes rarely; don't hammer the script
+
+  // Default round structure per event
+  const EVENT_ROUNDS = {
+    "3x3": ["First Round", "Second Round", "Third Round", "Final"],
+    "2x2": ["First Round", "Second Round", "Final"],
+    "Pyraminx": ["First Round", "Second Round", "Final"],
+    "Megaminx": ["Final"],
+    "4x4": ["Final"]
+  };
+
+  // Age-group-specific overrides if needed (removed override for 2x2 7-9)
+  const ROUNDS_OVERRIDE = {};
+
+  // How many competitors advance OUT of each round (event -> age group -> round -> count)
+  // Rounds not listed (all Finals, Megaminx, 4x4) get podium-only highlighting.
+  const ADVANCEMENT = {
+    "3x3": {
+      "5-6": { "First Round": 32, "Second Round": 16, "Third Round": 4 },
+      "7-9": { "First Round": 32, "Second Round": 16, "Third Round": 8 }
+    },
+    "2x2": {
+      "5-6": { "First Round": 16, "Second Round": 4 },
+      "7-9": { "First Round": 16, "Second Round": 8 }
+    },
+    "Pyraminx": {
+      "5-6": { "First Round": 16, "Second Round": 8 },
+      "7-9": { "First Round": 16, "Second Round": 8 }
+    }
+  };
+
+  // Knockout Finals (event -> age group -> bracket size). Every other round is a ranking.
+  const KNOCKOUT_BRACKETS = {
+    "3x3": { "5-6": 4, "7-9": 8 },
+    "2x2": { "5-6": 4 }
+  };
+  const KNOCKOUT_ROUND_NAME = "Final";
+  function getBracketSize(eventName, ageGroup) {
+    return (KNOCKOUT_BRACKETS[eventName] && KNOCKOUT_BRACKETS[eventName][ageGroup]) || 0;
+  }
+
+  const AGE_GROUP_EVENTS = {
+    "3x3": ["5-6", "7-9"],
+    "2x2": ["5-6", "7-9"],
+    "Pyraminx": ["5-6", "7-9"],
+    "Megaminx": ["7-9"],
+    "4x4": ["7-9"]
+  };
+
+  // Grade numbers per group. Matches "Grade 5", "5", "G5" etc.
+  const AGE_GROUP_GRADES = {
+    "5-6": [5, 6],
+    "7-9": [7, 8, 9]
+  };
+
+  const AGE_GROUP_LABELS = {
+    "5-6": "Grades 5–6",
+    "7-9": "Grades 7–9"
+  };
+
+  let allResultsData = [];
+  let allParticipants = [];
+  let currentEvent = "3x3";
+  let currentRound = "First Round";
+  let currentAgeGroup = "7-9";
+
+  function getRounds(eventName, ageGroup) {
+    const override = ROUNDS_OVERRIDE[eventName] && ROUNDS_OVERRIDE[eventName][ageGroup];
+    return override || EVENT_ROUNDS[eventName] || ["Final"];
+  }
+
+  function getAdvanceCount(eventName, ageGroup, roundName) {
+    const ev = ADVANCEMENT[eventName];
+    if (!ev || !ev[ageGroup]) return 0;
+    return ev[ageGroup][roundName] || 0;
+  }
+
+  function getNextRoundName(eventName, ageGroup, roundName) {
+    const rounds = getRounds(eventName, ageGroup);
+    const idx = rounds.indexOf(roundName);
+    return idx >= 0 && idx < rounds.length - 1 ? rounds[idx + 1] : null;
+  }
+
+  function fetchResults() {
+    fetch(RESULTS_API_URL)
+      .then(res => res.json())
+      .then(data => {
+        allResultsData = data.results || [];
+        if (Array.isArray(data.participants)) allParticipants = data.participants;
+        renderPage();
+      })
+      .catch(err => {
+        console.error("Error fetching results:", err);
+      });
+  }
+
+  function switchEvent(eventName) {
+    currentEvent = eventName;
+
+    const groupsHere = AGE_GROUP_EVENTS[eventName] || ["7-9"];
+    if (!groupsHere.includes(currentAgeGroup)) {
+      currentAgeGroup = groupsHere[0];
+    }
+    currentRound = getRounds(eventName, currentAgeGroup)[0];
+
+    document.querySelectorAll(".event-pill").forEach(btn => {
+      btn.classList.toggle("current", btn.innerText.trim() === eventName);
+    });
+    renderPage();
+  }
+
+  function switchRound(roundName) {
+    currentRound = roundName;
+    renderPage();
+  }
+
+  function switchAgeGroup(group) {
+    currentAgeGroup = group;
+    const rounds = getRounds(currentEvent, group);
+    if (!rounds.includes(currentRound)) {
+      currentRound = rounds[0];
+    }
+    renderPage();
+  }
+
+  function renderPage() {
+    updateHeader(currentEvent);
+    renderAgeGroupTabs();
+    renderRoundTabs();
+    renderTableAndStatus();
+  }
+
+  function renderAgeGroupTabs() {
+    const container = document.getElementById("ageGroupTabsContainer");
+    const groups = AGE_GROUP_EVENTS[currentEvent] || ["7-9"];
+    if (groups.length <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+    container.innerHTML = groups.map(g => `
+      <button class="agegroup-pill ${g === currentAgeGroup ? 'active' : ''}" onclick="switchAgeGroup('${g}')">
+        ${AGE_GROUP_LABELS[g]}
+      </button>
+    `).join("");
+  }
+
+  function updateHeader(eventName) {
+    document.getElementById("currentBadge").innerHTML = getEventIcon(eventName);
+    const isCube = (eventName === "2x2" || eventName === "3x3" || eventName === "4x4");
+    document.getElementById("currentTitle").childNodes[0].nodeValue = `${eventName}${isCube ? " Cube" : ""} `;
+  }
+
+  function getEventIcon(eventName) {
+    switch (eventName) {
+      case "2x2": return gridIcon(2);
+      case "3x3": return gridIcon(3);
+      case "4x4": return gridIcon(4);
+      case "Pyraminx": return pyraminxIcon();
+      case "Megaminx": return megaminxIcon();
+      default: return gridIcon(3);
+    }
+  }
+
+  function gridIcon(n) {
+    const size = 34, pad = 4, inner = size - pad * 2;
+    let lines = "";
+    for (let i = 1; i < n; i++) {
+      const pos = pad + (inner * i) / n;
+      lines += `<line x1="${pos}" y1="${pad}" x2="${pos}" y2="${size - pad}" stroke="#fff" stroke-width="1.4"/>`;
+      lines += `<line x1="${pad}" y1="${pos}" x2="${size - pad}" y2="${pos}" stroke="#fff" stroke-width="1.4"/>`;
+    }
+    return `<svg width="34" height="34" viewBox="0 0 ${size} ${size}" fill="none">
+      <rect x="${pad}" y="${pad}" width="${inner}" height="${inner}" rx="3" stroke="#fff" stroke-width="1.6"/>
+      ${lines}
+    </svg>`;
+  }
+
+  function pyraminxIcon() {
+    return `<svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+      <polygon points="17,4 30,28 4,28" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+      <line x1="10.5" y1="16" x2="23.5" y2="16" stroke="#fff" stroke-width="1.2"/>
+      <line x1="10.5" y1="16" x2="17" y2="28" stroke="#fff" stroke-width="1.2"/>
+      <line x1="23.5" y1="16" x2="17" y2="28" stroke="#fff" stroke-width="1.2"/>
+    </svg>`;
+  }
+
+  function megaminxIcon() {
+    return `<svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+      <polygon points="17,4 29.36,12.98 24.64,27.52 9.36,27.52 4.64,12.98" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+      <polygon points="17,10.5 23.18,14.99 20.82,22.26 13.18,22.26 10.82,14.99" stroke="#fff" stroke-width="1.1"/>
+    </svg>`;
+  }
+
+  function renderRoundTabs() {
+    const tabsContainer = document.getElementById("roundTabsContainer");
+    const rounds = getRounds(currentEvent, currentAgeGroup);
+    tabsContainer.innerHTML = rounds.map(round => `
+      <button class="round-tab ${round === currentRound ? 'active' : ''}" onclick="switchRound('${round}')">
+        ${round}
+      </button>
+    `).join("");
+  }
+
+  function isKnockoutRound(eventName, ageGroup, roundName) {
+    return roundName === KNOCKOUT_ROUND_NAME && getBracketSize(eventName, ageGroup) > 0;
+  }
+
+  function isKnockoutView() {
+    return isKnockoutRound(currentEvent, currentAgeGroup, currentRound);
+  }
+
+  function isTwoSolve(eventName) {
+    return eventName === "Megaminx" || eventName === "4x4";
+  }
+
+  function gradeNumber(grade) {
+    const n = parseInt(String(grade || "").replace(/[^0-9]/g, ""), 10);
+    return isNaN(n) ? null : n;
+  }
+
+  function inAgeGroup(row, ageGroup) {
+    return (AGE_GROUP_GRADES[ageGroup] || []).includes(gradeNumber(row.Grade));
+  }
+
+  function idKey(r) { return (r.CompetitorID || "").toString().trim().toLowerCase(); }
+  function nameKey(r) { return (r.Name || "").toString().trim().toLowerCase(); }
+
+  function solvesOf(row, eventName) {
+    const s = [row.Solve1, row.Solve2];
+    if (!isTwoSolve(eventName)) s.push(row.Solve3);
+    return s;
+  }
+
+  function isBlank(v) {
+    return v === undefined || v === null || String(v).trim() === "" || String(v).trim() === "-";
+  }
+
+  function hasAnyTime(row) {
+    return [row.Solve1, row.Solve2, row.Solve3, row.Best, row.Average].some(v => !isBlank(v));
+  }
+
+  function bestOf(row, eventName) {
+    const b = parseTime(row.Best);
+    if (b !== Infinity) return b;
+    return Math.min(...solvesOf(row, eventName).map(parseTime));
+  }
+
+  function tiebreakOf(row, eventName) {
+    if (isTwoSolve(eventName)) {
+      const t = solvesOf(row, eventName).map(parseTime).sort((x, y) => x - y);
+      return t[1];
+    }
+    return parseTime(row.Average);
+  }
+
+  function cmpNum(x, y) {
+    if (x === y) return 0;
+    return x < y ? -1 : 1;
+  }
+
+  function deduplicateEntries(rows, eventName) {
+    const byKey = new Map();
+    rows.forEach(r => {
+      const key = idKey(r) || nameKey(r);
+      const existing = byKey.get(key);
+      if (!existing) { byKey.set(key, r); return; }
+      const c = cmpNum(bestOf(r, eventName), bestOf(existing, eventName));
+      if (c < 0 || (c === 0 && hasAnyTime(r) && !hasAnyTime(existing))) byKey.set(key, r);
+    });
+    return Array.from(byKey.values());
+  }
+
+  function participantEvents(p) {
+    const raw = p.Events !== undefined ? p.Events : p.Event;
+    const list = Array.isArray(raw) ? raw : String(raw || "").split(/[,;|]/);
+    return list.map(e => String(e).trim().toLowerCase()).filter(Boolean);
+  }
+
+  function expectedEntrants(eventName, ageGroup, roundName) {
+    const rounds = getRounds(eventName, ageGroup);
+    const idx = rounds.indexOf(roundName);
+    if (idx > 0) {
+      return getRankedRound(eventName, ageGroup, rounds[idx - 1]).qualified;
+    }
+    const ev = eventName.toLowerCase();
+    return allParticipants.filter(p =>
+      p && p.Name && inAgeGroup(p, ageGroup) && participantEvents(p).includes(ev)
+    );
+  }
+
+  function getRankedRound(eventName, ageGroup, roundName) {
+    const results = deduplicateEntries(
+      allResultsData.filter(r => r.Event === eventName && r.Round === roundName && inAgeGroup(r, ageGroup)),
+      eventName
+    );
+
+    const ids = new Set(results.map(idKey).filter(Boolean));
+    const names = new Set(results.map(nameKey).filter(Boolean));
+    const placeholders = [];
+    expectedEntrants(eventName, ageGroup, roundName).forEach(p => {
+      const id = idKey(p), nm = nameKey(p);
+      if ((id && ids.has(id)) || (nm && names.has(nm))) return;
+      if (id) ids.add(id);
+      if (nm) names.add(nm);
+      placeholders.push({ Name: p.Name, Grade: p.Grade, CompetitorID: p.CompetitorID });
+    });
+
+    const rows = results.concat(placeholders).map(r => ({
+      row: r,
+      best: bestOf(r, eventName),
+      tie: tiebreakOf(r, eventName),
+      timed: hasAnyTime(r)
+    }));
+
+    rows.sort((a, b) =>
+      cmpNum(a.best, b.best) ||
+      cmpNum(a.tie, b.tie) ||
+      (a.timed === b.timed ? 0 : (a.timed ? -1 : 1)) ||
+      nameKey(a.row).localeCompare(nameKey(b.row))
+    );
+
+    let prev = null;
+    rows.forEach((r, i) => {
+      if (r.best === Infinity) { r.rank = null; return; }
+      r.rank = (prev && prev.best === r.best && prev.tie === r.tie) ? prev.rank : i + 1;
+      prev = r;
+    });
+
+    const advanceCount = getAdvanceCount(eventName, ageGroup, roundName);
+    const hasNext = !!getNextRoundName(eventName, ageGroup, roundName);
+    rows.forEach(r => {
+      r.qualified = hasNext && advanceCount > 0 && r.rank !== null && r.rank <= advanceCount;
+    });
+
+    return { rows, qualified: rows.filter(r => r.qualified).map(r => r.row) };
+  }
+
+  function renderAdvanceNote(advanceCount, nextRound) {
+    const note = document.getElementById("advanceNote");
+    if (advanceCount > 0 && nextRound && !isKnockoutView()) {
+      note.style.display = "flex";
+      note.innerHTML = `<span class="swatch"></span>Top ${advanceCount} advance to the ${nextRound}`;
+    } else {
+      note.style.display = "none";
+      note.innerHTML = "";
+    }
+  }
+
+  function liveBadgeHtml(rows) {
+    return rows.some(r => r.Status === "Live")
+      ? `<span class="live-badge"><span class="live-dot"></span>LIVE</span>` : '';
+  }
+
+  function cell(v) { return isBlank(v) ? "" : v; }
+
+  function renderTableAndStatus() {
+    const statusContainer = document.getElementById("liveStatusContainer");
+    const tableWrap = document.getElementById("resultsTableWrap");
+    const bracketWrap = document.getElementById("bracketWrap");
+    const thead = document.getElementById("resultsTableHead");
+
+    const twoSolve = isTwoSolve(currentEvent);
+    const advanceCount = getAdvanceCount(currentEvent, currentAgeGroup, currentRound);
+    const nextRound = getNextRoundName(currentEvent, currentAgeGroup, currentRound);
+    renderAdvanceNote(advanceCount, nextRound);
+
+    if (isKnockoutView()) {
+      const knockoutPrefix = `${currentRound} — ${currentAgeGroup} — `;
+      const koRows = allResultsData.filter(r => r.Event === currentEvent && r.Round && r.Round.indexOf(knockoutPrefix) === 0);
+      statusContainer.innerHTML = liveBadgeHtml(koRows);
+      tableWrap.style.display = "none";
+      bracketWrap.style.display = "block";
+      const rounds = getRounds(currentEvent, currentAgeGroup);
+      const prevRound = rounds[rounds.indexOf(currentRound) - 1];
+      const seeds = prevRound ? getRankedRound(currentEvent, currentAgeGroup, prevRound).qualified : [];
+      renderBracket(koRows, currentAgeGroup, seeds, getBracketSize(currentEvent, currentAgeGroup));
+      return;
+    }
+
+    thead.innerHTML = twoSolve ? `
+        <tr>
+          <th>Rank</th>
+          <th>Competitor</th>
+          <th class="num">Solve 1</th>
+          <th class="num">Solve 2</th>
+          <th class="num">Best</th>
+        </tr>` : `
+        <tr>
+          <th>Rank</th>
+          <th>Competitor</th>
+          <th class="num">Solve 1</th>
+          <th class="num">Solve 2</th>
+          <th class="num">Solve 3</th>
+          <th class="num">Best</th>
+          <th class="num">Average</th>
+        </tr>`;
+
+    tableWrap.style.display = "block";
+    bracketWrap.style.display = "none";
+
+    const { rows } = getRankedRound(currentEvent, currentAgeGroup, currentRound);
+    statusContainer.innerHTML = liveBadgeHtml(rows.map(r => r.row));
+
+    const tbody = document.getElementById("resultsTableBody");
+    const colSpanCount = twoSolve ? 5 : 7;
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="${colSpanCount}" class="empty-msg">No competitors for this round yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(r => {
+      const row = r.row;
+      const rowClasses = [
+        r.rank !== null && r.rank <= 3 ? "podium" : "",
+        r.qualified ? "qualified" : "",
+        !r.timed ? "awaiting" : ""
+      ].filter(Boolean).join(" ");
+      const qTag = r.qualified ? `<span class="q-tag">Q</span>` : "";
+
+      let medalHtml = "";
+      if (r.rank === 1) medalHtml = `<span class="medal gold">1</span>`;
+      else if (r.rank === 2) medalHtml = `<span class="medal silver">2</span>`;
+      else if (r.rank === 3) medalHtml = `<span class="medal bronze">3</span>`;
+      const rankHtml = medalHtml || (r.rank !== null ? r.rank : "");
+
+      let bestDisplay = cell(row.Best);
+      if (!bestDisplay && r.best !== Infinity) {
+        bestDisplay = solvesOf(row, currentEvent).find(s => parseTime(s) === r.best) || "";
+      }
+
+      const nameHtml = `
+            <td>
+              <strong>${row.Name}</strong>
+              ${row.Grade ? `<span class="grade-tag">(${row.Grade})</span>` : ''}
+              ${qTag}
+            </td>`;
+
+      if (twoSolve) {
+        return `
+          <tr class="${rowClasses}">
+            <td class="rank-cell">${rankHtml}</td>
+            ${nameHtml}
+            <td class="num">${cell(row.Solve1)}</td>
+            <td class="num">${cell(row.Solve2)}</td>
+            <td class="num best">${bestDisplay}</td>
+          </tr>`;
+      }
+      return `
+          <tr class="${rowClasses}">
+            <td class="rank-cell">${rankHtml}</td>
+            ${nameHtml}
+            <td class="num">${cell(row.Solve1)}</td>
+            <td class="num">${cell(row.Solve2)}</td>
+            <td class="num">${cell(row.Solve3)}</td>
+            <td class="num best">${bestDisplay}</td>
+            <td class="num">${cell(row.Average)}</td>
+          </tr>`;
+    }).join("");
+  }
+
+  function parseTime(str) {
+    if (str === undefined || str === null) return Infinity;
+    const s = String(str).trim().toUpperCase();
+    if (s === "" || s.includes("DNF") || s.includes("DNS")) return Infinity;
+    const parts = s.replace(/[^0-9.:]/g, "").split(":");
+    let total = 0;
+    for (const p of parts) {
+      const v = parseFloat(p);
+      if (isNaN(v)) return Infinity;
+      total = total * 60 + v;
+    }
+    return total;
+  }
+
+  function headToHead(a, b) {
+    const aTimes = [parseTime(a.Solve1), parseTime(a.Solve2), parseTime(a.Solve3)];
+    const bTimes = [parseTime(b.Solve1), parseTime(b.Solve2), parseTime(b.Solve3)];
+    let aWins = 0, bWins = 0;
+    for (let i = 0; i < 3; i++) {
+      if (aTimes[i] < bTimes[i]) aWins++;
+      else if (bTimes[i] < aTimes[i]) bWins++;
+    }
+    if (aWins !== bWins) {
+      return { winner: aWins > bWins ? a : b, decidedBy: `Solves (${Math.max(aWins, bWins)}–2)` };
+    }
+    const aAvg = parseTime(a.Average), bAvg = parseTime(b.Average);
+    if (aAvg !== bAvg) {
+      return { winner: aAvg < bAvg ? a : b, decidedBy: "Average (tiebreak)" };
+    }
+    const aBest = parseTime(a.Best), bBest = parseTime(b.Best);
+    if (aBest !== bBest) {
+      return { winner: aBest < bBest ? a : b, decidedBy: "Best solve (tiebreak)" };
+    }
+    return { winner: a, decidedBy: "Seed (dead tie)" };
+  }
+
+  function matchSlotHtml(p, opp, winner) {
+    const pTimes = [p.Solve1, p.Solve2, p.Solve3];
+    const oTimes = [opp.Solve1, opp.Solve2, opp.Solve3];
+    const chips = pTimes.map((t, i) => {
+      const won = parseTime(t) < parseTime(oTimes[i]);
+      return `<span class="solve-chip ${won ? 'win' : ''}">${t || '-'}</span>`;
+    }).join('');
+    return `<div class="match-slot ${p === winner ? 'winner' : ''}">
+      <div class="slot-top">
+        <span class="slot-name">${p.Name}</span>
+        <span class="slot-time">${p.Best || '-'}</span>
+      </div>
+      <div class="slot-solves">${chips}</div>
+    </div>`;
+  }
+
+  function matchCardHtml(pair) {
+    const [a, b] = pair;
+    const result = headToHead(a, b);
+    return `<div class="match-card">
+      ${matchSlotHtml(a, b, result.winner)}
+      ${matchSlotHtml(b, a, result.winner)}
+      <div class="decided-by">${result.decidedBy}</div>
+    </div>`;
+  }
+
+  const QF_STAGES = ["Quarterfinal 1", "Quarterfinal 2", "Quarterfinal 3", "Quarterfinal 4"];
+  const SF_STAGES = ["Semifinal 1", "Semifinal 2"];
+  const FINAL_STAGE = "Championship";
+  const BRONZE_STAGE = "3rd Place Match";
+
+  function groupByStage(rows) {
+    const map = {};
+    rows.forEach(r => {
+      const sepIdx = r.Round.lastIndexOf(" — ");
+      if (sepIdx === -1) return;
+      const stage = r.Round.slice(sepIdx + 3);
+      if (!map[stage]) map[stage] = {};
+      const key = r.CompetitorID || r.Name;
+      map[stage][key] = r;
+    });
+    return map;
+  }
+
+  function matchForStage(stageMap, stageName) {
+    const entries = stageMap[stageName] ? Object.values(stageMap[stageName]) : [];
+    if (entries.length >= 2) return { state: "complete", a: entries[0], b: entries[1] };
+    if (entries.length === 1) return { state: "pending", a: entries[0] };
+    return { state: "empty" };
+  }
+
+  function pendingSlotHtml(text) {
+    return `<div class="match-slot pending"><span class="slot-name">${text}</span></div>`;
+  }
+
+  function singleSlotHtml(p) {
+    const chips = [p.Solve1, p.Solve2, p.Solve3].map(t => `<span class="solve-chip">${t || '&nbsp;'}</span>`).join('');
+    return `<div class="match-slot">
+      <div class="slot-top">
+        <span class="slot-name">${p.Name}</span>
+        <span class="slot-time">${p.Best || ''}</span>
+      </div>
+      <div class="slot-solves">${chips}</div>
+    </div>`;
+  }
+
+  function seededMatch(match, a, b) {
+    if (match.state === "complete") return match;
+    if (match.state === "pending") {
+      const other = [a, b].find(p => p && nameKey(p) !== nameKey(match.a));
+      return other ? { state: "seeded", a: match.a, b: other } : match;
+    }
+    if (!a && !b) return match;
+    return { state: "seeded", a: a || null, b: b || null };
+  }
+
+  function matchWinnerLoser(match) {
+    if (match.state !== "complete") return { winner: null, loser: null };
+    const w = headToHead(match.a, match.b).winner;
+    return { winner: w, loser: w === match.a ? match.b : match.a };
+  }
+
+  function stageCardHtml(match) {
+    if (match.state === "complete") return matchCardHtml([match.a, match.b]);
+    if (match.state === "seeded") {
+      const slot = p => p ? singleSlotHtml(p) : pendingSlotHtml("TBD");
+      return `<div class="match-card">${slot(match.a)}${slot(match.b)}</div>`;
+    }
+    if (match.state === "pending") {
+      return `<div class="match-card">${singleSlotHtml(match.a)}${pendingSlotHtml("Awaiting opponent")}</div>`;
+    }
+    return `<div class="match-card">${pendingSlotHtml("TBD")}${pendingSlotHtml("TBD")}</div>`;
+  }
+
+  function renderBracket(data, ageGroup, seeds, bracketSize) {
+    seeds = seeds || [];
+    const wrap = document.getElementById("bracket");
+    const stageMap = groupByStage(data);
+    bracketSize = bracketSize || 4;
+    const useQuarters = bracketSize > 4;
+
+    const hasAnyStageData = Object.keys(stageMap).length > 0;
+    if (!hasAnyStageData && seeds.length === 0) {
+      wrap.innerHTML = `<div class="empty-msg">No knockout results entered yet for ${AGE_GROUP_LABELS[ageGroup]} (${bracketSize}-competitor bracket). Use the "Knockout Match" field on the entry form to submit each bracket match.</div>`;
+      return;
+    }
+
+    const qfPairs = [[seeds[0], seeds[7]], [seeds[3], seeds[4]], [seeds[1], seeds[6]], [seeds[2], seeds[5]]];
+    const qfMatches = useQuarters
+      ? QF_STAGES.map((s, i) => seededMatch(matchForStage(stageMap, s), qfPairs[i][0], qfPairs[i][1]))
+      : [];
+    const qfW = qfMatches.map(m => matchWinnerLoser(m).winner);
+
+    const sfPairs = useQuarters
+      ? [[qfW[0], qfW[1]], [qfW[2], qfW[3]]]
+      : [[seeds[0], seeds[3]], [seeds[1], seeds[2]]];
+    const sfMatches = SF_STAGES.map((s, i) => seededMatch(matchForStage(stageMap, s), sfPairs[i][0], sfPairs[i][1]));
+    const sf1 = matchWinnerLoser(sfMatches[0]);
+    const sf2 = matchWinnerLoser(sfMatches[1]);
+    const finalMatch = seededMatch(matchForStage(stageMap, FINAL_STAGE), sf1.winner, sf2.winner);
+    const bronzeMatch = seededMatch(matchForStage(stageMap, BRONZE_STAGE), sf1.loser, sf2.loser);
+
+    const championHtml = finalMatch.state === "complete"
+      ? `<div class="champion-card"><div class="champion-badge">🏆 ${headToHead(finalMatch.a, finalMatch.b).winner.Name}</div></div>`
+      : "";
+
+    const bronzeNote = bronzeMatch.state === "complete"
+      ? `3rd Place Match &nbsp;·&nbsp; ${bronzeMatch.a.Name} vs ${bronzeMatch.b.Name} &nbsp;·&nbsp; Winner: <strong>${headToHead(bronzeMatch.a, bronzeMatch.b).winner.Name}</strong>`
+      : bronzeMatch.state === "seeded"
+      ? `3rd Place Match &nbsp;·&nbsp; ${bronzeMatch.a ? bronzeMatch.a.Name : 'TBD'} vs ${bronzeMatch.b ? bronzeMatch.b.Name : 'TBD'}`
+      : bronzeMatch.state === "pending"
+      ? `3rd Place Match &nbsp;·&nbsp; ${bronzeMatch.a.Name} vs awaiting opponent`
+      : `3rd Place Match &nbsp;·&nbsp; awaiting results`;
+
+    const qfColumnHtml = useQuarters ? `
+        <div class="bracket-round">
+          <div class="bracket-round-title">Quarterfinals</div>
+          ${qfMatches.map(m => stageCardHtml(m)).join('')}
+        </div>` : '';
+
+    wrap.innerHTML = `
+      <div class="bracket" style="min-width:${useQuarters ? 740 : 420}px;">
+        ${qfColumnHtml}
+        <div class="bracket-round">
+          <div class="bracket-round-title">Semifinals</div>
+          ${sfMatches.map(m => stageCardHtml(m)).join('')}
+        </div>
+        <div class="bracket-round">
+          <div class="bracket-round-title">Championship</div>
+          ${stageCardHtml(finalMatch)}
+          ${championHtml}
+        </div>
+      </div>
+      <div class="bracket-note">${AGE_GROUP_LABELS[ageGroup]} &nbsp;·&nbsp; ${bronzeNote}</div>
+      <div class="bracket-legend">Each match is a best-of-3 head-to-head — first to 2 solve wins takes it; ties go to average, then single best solve.</div>
+    `;
+  }
+
+  function fetchParticipants() {
+    if (!REGISTRATIONS_API_URL || REGISTRATIONS_API_URL.indexOf("PASTE_") === 0) return;
+    fetch(REGISTRATIONS_API_URL + "?action=participants")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success && Array.isArray(data.participants)) {
+          allParticipants = data.participants;
+          renderPage();
+        }
+      })
+      .catch(err => console.error("Error fetching participants:", err));
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    fetchParticipants();
+    fetchResults();
+    setInterval(fetchResults, 2000);
+    setInterval(fetchParticipants, PARTICIPANTS_POLL_MS);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — FKS Cubing Open 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12172B; --paper:#F6F4EF; --paper-dim:#EAE7DD;
+    --cube-red:#E6402A; --cube-yellow:#F2B705; --cube-green:#1E8E5A; --cube-blue:#1758C4;
+    --line:#D9D5C8; --text-dim:#6B7280; --cube-orange:#FF5C00
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:720px;margin:0 auto;padding:0 28px;}
+  nav{position:sticky;top:0;z-index:50;background:rgba(246,244,239,0.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1120px;margin:0 auto;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.01em;}
+  .logo-mark{height:36px;width:auto;flex-shrink:0;}
+  .nav-links{display:flex;align-items:center;gap:28px;font-size:14.5px;font-weight:500;}
+  .nav-links .active{position:relative;}
+  .nav-links .active::after{content:"";position:absolute;left:0;right:0;bottom:-19px;height:2px;background:var(--ink);}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid transparent;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn-solid-red{background:var(--cube-red);color:#fff;}
+  .btn-solid-red:hover{box-shadow:0 6px 16px rgba(230,64,42,0.35);}
+  .btn-solid-red:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
+  @media(max-width:640px){.nav-links{display:none;}}
+  .page-header{background:radial-gradient(120% 140% at 15% 0%, #202749 0%, var(--ink) 55%, #0C1022 100%);color:var(--paper);padding:52px 0 40px;text-align:center;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--cube-yellow);border:1px solid rgba(242,183,5,0.4);padding:6px 14px;border-radius:999px;margin-bottom:20px;}
+  .eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--cube-red);}
+  .page-header h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(30px,5vw,44px);letter-spacing:-0.02em;margin-bottom:12px;}
+  .page-header p{color:rgba(246,244,239,0.7);font-size:15px;}
+  .form-section{padding:48px 0 24px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px;}
+  .field{margin-bottom:22px;}
+  .field label{display:block;font-weight:600;font-size:14px;margin-bottom:8px;}
+  .field input[type=text]{
+    width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:14.5px;font-family:'Inter',sans-serif;
+  }
+  .grade-options{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+  @media(max-width:520px){.grade-options{grid-template-columns:repeat(3,1fr);}}
+  .radio-pill{
+    border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;font-size:13.5px;font-weight:600;
+    cursor:pointer;transition:border-color .15s ease, background .15s ease;
+  }
+  .radio-pill.selected{border-color:var(--ink);background:var(--paper-dim);}
+  .event-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media(max-width:520px){.event-options{grid-template-columns:1fr;}}
+  .event-check{
+    display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+    cursor:pointer;transition:border-color .15s ease, background .15s ease;
+  }
+  .event-check.selected{border-color:var(--e-color,var(--ink));background:var(--paper-dim);}
+  .event-check.disabled{opacity:0.4;cursor:not-allowed;}
+  .event-dot{width:12px;height:12px;border-radius:4px;background:var(--e-color,var(--ink));flex-shrink:0;}
+  .event-check .name{font-weight:600;font-size:14px;flex:1;}
+  .event-check .check-icon{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);flex-shrink:0;}
+  .event-check.selected .check-icon{background:var(--e-color,var(--ink));border-color:var(--e-color,var(--ink));}
+  .fee-summary{
+    display:flex;align-items:center;justify-content:space-between;background:var(--paper-dim);border-radius:12px;padding:16px 18px;margin-top:6px;
+  }
+  .fee-summary .label{font-size:13.5px;color:var(--text-dim);}
+  .fee-summary .amount{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;}
+  .fee-tiers{font-size:12px;color:var(--text-dim);margin-top:8px;line-height:1.5;}
+  .submit-row{margin-top:24px;}
+  .submit-row .btn{width:100%;justify-content:center;padding:13px;font-size:15px;}
+  .status-msg{margin-top:16px;font-size:13.5px;padding:12px 14px;border-radius:10px;display:none;}
+  .status-msg.success{display:block;background:rgba(30,142,90,0.1);color:var(--cube-green);}
+  .status-msg.error{display:block;background:rgba(230,64,42,0.1);color:var(--cube-red);}
+  .hint{font-size:12.5px;color:var(--text-dim);margin-top:6px;}
+  footer{background:var(--ink);color:rgba(246,244,239,0.65);padding:40px 0;font-size:13px;}
+  .footer-inner{max-width:1120px;margin:0 auto;padding:0 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  footer .logo{color:var(--paper);}
+  footer .logo-mark{filter:brightness(0) invert(1);}
+
+  /* TUTORIAL OVERLAY STYLES */
+  .tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(18, 23, 43, 0.75);
+    z-index: 1000;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .tutorial-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .tutorial-box {
+    position: absolute;
+    background: #fff;
+    color: var(--ink);
+    padding: 18px 22px;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    max-width: 280px;
+    z-index: 1002;
+  }
+  .tutorial-box::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 24px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #fff;
+  }
+  .tutorial-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+  .tutorial-text {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+  .tutorial-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .tutorial-btn-close {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .volunteer-highlight {
+    position: relative;
+    z-index: 1001 !important;
+    background: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    box-shadow: 0 0 0 4px var(--cube-yellow);
+  }
+</style>
+</head>
+<body>
+
+<!-- Tutorial Overlay Container -->
+<div class="tutorial-overlay" id="tutorialOverlay">
+  <div class="tutorial-box" id="tutorialBox">
+    <div class="tutorial-title">Want to help out?</div>
+    <div class="tutorial-text">Click here to volunteer and make this event a success!</div>
+    <div class="tutorial-actions">
+      <button class="tutorial-btn-close" id="closeTutorialBtn">Got it</button>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+     <img src="FKS Logo.png" class="logo-mark"> <span>FKS Cubing Open 2026</span>
+    </a>
+    <div class="nav-links">
+      <a href="#" class="active">Register</a>
+      <a href="volunteer.html" id="volunteerLink">Volunteer</a>
+    </div>
+  </div>
+</nav>
+<header class="page-header">
+  <div class="eyebrow"><span class="eyebrow-dot"></span> Saturday, October 3, 2026</div>
+  <h1>Register</h1>
+  <p>Pick a grade, choose your events, and you're in. Fees adjust automatically below.<br>
+  Please also feel free to volunteer to make this event a sucess.</p>
+</header>
+<section class="form-section wrap">
+  <div class="card">
+    <form id="reg-form">
+      <div class="field">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Aarav Mehta" required>
+      </div>
+      <div class="field">
+        <label>Grade</label>
+        <div class="grade-options" id="grade-options">
+          <div class="radio-pill" data-grade="5">Grade 5</div>
+          <div class="radio-pill" data-grade="6">Grade 6</div>
+          <div class="radio-pill" data-grade="7">Grade 7</div>
+          <div class="radio-pill" data-grade="8">Grade 8</div>
+          <div class="radio-pill" data-grade="9">Grade 9</div>
+        </div>
+        <div class="hint">Megaminx and 4x4 are only open to Grades 7, 8 &amp; 9.</div>
+      </div>
+      <div class="field">
+        <label>Events</label>
+        <div class="event-options" id="event-options">
+          <div class="event-check" data-event="3x3" style="--e-color:var(--cube-red);">
+            <span class="event-dot"></span><span class="name">3×3</span><span class="check-icon"></span>
+          </div>
+          <div class="event-check" data-event="2x2" style="--e-color:var(--cube-yellow);">
+            <span class="event-dot"></span><span class="name">2×2</span><span class="check-icon"></span>
+          </div>
+          <div class="event-check" data-event="pyraminx" style="--e-color:var(--cube-blue);">
+            <span class="event-dot"></span><span class="name">Pyraminx</span><span class="check-icon"></span>
+          </div>
+          <div class="event-check" data-event="megaminx" style="--e-color:var(--cube-green);">
+            <span class="event-dot"></span><span class="name">Megaminx</span><span class="check-icon"></span>
+          </div>
+            <div class="event-check" data-event="4x4" style="--e-color:var(--cube-orange);">
+            <span class="event-dot"></span><span class="name">4x4</span><span class="check-icon"></span>
+           </div>
+        </div>
+      </div>
+      <div class="fee-summary">
+        <span class="label" id="fee-label">Select at least one event</span>
+        <span class="amount" id="fee-amount">₹0</span>
+      </div>
+      <div class="fee-tiers">1 event: ₹100 &nbsp;·&nbsp; 2 events: ₹200 &nbsp;·&nbsp; 3 events: ₹250 &nbsp;·&nbsp; 4 events: ₹300 &nbsp;·&nbsp; 5 events: ₹350</div>
+      <input type="hidden" id="fee-amount-input" name="feeAmount" value="0">
+      <div class="submit-row">
+        <button type="submit" class="btn btn-solid-red" id="submit-btn" disabled>Submit Registration</button>
+      </div>
+      <div class="status-msg" id="status-msg"></div>
+    </form>
+  </div>
+</section>
+<footer>
+  <div class="footer-inner">
+    <div class="logo"><img class="logo-mark" src="FKS Logo.png"></div>
+  </div>
+</footer>
+
+<script>
+  let selectedGrade = null;
+  const form = document.getElementById('reg-form');
+  const nameInput = document.getElementById('name');
+  const gradePills = document.querySelectorAll('.radio-pill');
+  const eventChecks = document.querySelectorAll('.event-check');
+  const submitBtn = document.getElementById('submit-btn');
+  const feeLabel = document.getElementById('fee-label');
+  const feeAmount = document.getElementById('fee-amount');
+  const feeAmountInput = document.getElementById('fee-amount-input');
+  const statusMsg = document.getElementById('status-msg');
+
+  const REGISTRATION_API_URL = 'https://script.google.com/macros/s/AKfycbzDnOlNpI72X25rFl4D2rywCfv97MtvXX_Yzch2Yq7-yV4bjzypxy4u8OJOpS63h2Ll/exec';
+
+  const FEE_TABLE = { 1: 100, 2: 200, 3: 250, 4: 300, 5: 350 };
+
+  // Grade Selection Logic
+  gradePills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      gradePills.forEach(p => p.classList.remove('selected'));
+      pill.classList.add('selected');
+      selectedGrade = pill.getAttribute('data-grade');
+      updateEventRestrictions();
+      checkFormValidity();
+    });
+  });
+
+  // Event Selection Logic
+  eventChecks.forEach(check => {
+    check.addEventListener('click', () => {
+      if (check.classList.contains('disabled')) return;
+
+      check.classList.toggle('selected');
+      checkFormValidity();
+    });
+  });
+
+  // Restrict events based on selected grade
+  function updateEventRestrictions() {
+    eventChecks.forEach(check => {
+      const eventType = check.getAttribute('data-event');
+
+      if (eventType === 'megaminx' || eventType === '4x4') {
+        if (selectedGrade === '5' || selectedGrade === '6') {
+          check.classList.add('disabled');
+          check.classList.remove('selected');
+        } else {
+          check.classList.remove('disabled');
+        }
+      }
+    });
+  }
+
+  // Recomputes the fee box from how many events are currently selected
+  function updateFeeSummary(selectedEventCount) {
+    if (selectedEventCount === 0) {
+      feeLabel.innerText = 'Select at least one event';
+      feeAmount.innerText = '₹0';
+      feeAmountInput.value = '0';
+      return 0;
+    }
+    const fee = FEE_TABLE[selectedEventCount] || 0;
+    feeLabel.innerText = `${selectedEventCount} event${selectedEventCount > 1 ? 's' : ''} selected`;
+    feeAmount.innerText = `₹${fee}`;
+    feeAmountInput.value = String(fee);
+    return fee;
+  }
+
+  // Validate form and activate submit button
+  function checkFormValidity() {
+    const hasSelectedGrade = selectedGrade !== null;
+    const selectedEventCount = document.querySelectorAll('.event-check.selected').length;
+
+    updateFeeSummary(selectedEventCount);
+    submitBtn.disabled = !(hasSelectedGrade && selectedEventCount > 0);
+  }
+
+  // Form submission handler
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const selectedEvents = Array.from(document.querySelectorAll('.event-check.selected'))
+      .map(el => el.getAttribute('data-event'));
+
+    const calculatedTotal = FEE_TABLE[selectedEvents.length] || 0;
+
+    const payload = {
+      action: "register",
+      name: nameInput.value.trim(),
+      grade: `Grade ${selectedGrade}`,
+      events: selectedEvents.join(', '),
+      totalFee: calculatedTotal,
+      fee: calculatedTotal
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+    
+    // Hide and reset status message prior to request
+    statusMsg.style.display = "none";
+    statusMsg.className = "status-msg";
+
+    fetch(REGISTRATION_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      // 1. Check for Duplicate Registration
+      if (data.duplicate) {
+        statusMsg.textContent = data.error;
+        statusMsg.className = "status-msg error";
+        statusMsg.style.display = "block";
+      } 
+      // 2. Successful Registration
+      else if (data.success || data.status === "success") {
+        const registrationId = data.id || data.username || "N/A";
+
+        statusMsg.innerHTML = `Registration submitted successfully! Your Registration ID is <strong>${registrationId}</strong>. See you at FKS Cubing Open 2026.`;
+        statusMsg.className = "status-msg success";
+        statusMsg.style.display = "block";
+
+        // Clear form state
+        form.reset();
+        selectedGrade = null;
+        gradePills.forEach(p => p.classList.remove('selected'));
+        eventChecks.forEach(c => {
+          c.classList.remove('selected');
+          c.classList.remove('disabled');
+        });
+        updateFeeSummary(0);
+      } 
+      // 3. Other Errors
+      else {
+        throw new Error(data.error || "Submission failed");
+      }
+    })
+    .catch(err => {
+      console.error("Registration error:", err);
+      statusMsg.textContent = "There was an error submitting your registration. Please try again.";
+      statusMsg.className = "status-msg error";
+      statusMsg.style.display = "block";
+    })
+    .finally(() => {
+      submitBtn.textContent = "Submit Registration";
+    });
+  });
+
+  // Tutorial Positioning & Visibility Logic
+  function positionTutorial() {
+    const volunteerLink = document.getElementById('volunteerLink');
+    const tutorialBox = document.getElementById('tutorialBox');
+    
+    if (volunteerLink && tutorialBox) {
+      const rect = volunteerLink.getBoundingClientRect();
+      tutorialBox.style.top = `${rect.bottom + 12}px`;
+      tutorialBox.style.left = `${rect.left + (rect.width / 2) - 230}px`;
+    }
+  }
+
+  function dismissTutorial() {
+    const overlay = document.getElementById('tutorialOverlay');
+    const volunteerLink = document.getElementById('volunteerLink');
+    overlay.classList.remove('active');
+    volunteerLink.classList.remove('volunteer-highlight');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('tutorialOverlay');
+    const volunteerLink = document.getElementById('volunteerLink');
+    const closeBtn = document.getElementById('closeTutorialBtn');
+
+    // Show tutorial after brief delay
+    setTimeout(() => {
+      positionTutorial();
+      volunteerLink.classList.add('volunteer-highlight');
+      overlay.classList.add('active');
+    }, 400);
+
+    closeBtn.addEventListener('click', dismissTutorial);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) dismissTutorial();
+    });
+
+    window.addEventListener('resize', positionTutorial);
+  });
+</script>
+
+</body>
+</html>

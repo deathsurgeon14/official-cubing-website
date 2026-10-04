@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FKS Cubing Open 2026 — Intraschool Speedcubing Event</title>
+  
+
+<!-- Search Description (Appears below the title in search results) -->
+<meta name="description" content="Official website for FKS Cubing. Register for cubing events, check competition schedules, timing stations, and results.">
+
+<!-- Keywords (Optional, but good for context) -->
+<meta name="keywords" content="FKS Cubing, Rubiks Cube competition, speedcubing, cubing event">
+
+<!-- Search Engine Robots Instructions -->
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph Tags (Controls how link previews look when shared on WhatsApp/Social Media) -->
+<meta property="og:title" content="FKS Cubing">
+<meta property="og:description" content="Register for upcoming FKS Cubing events and view live competition details.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12172B;
+    --ink-soft:#1B2140;
+    --paper:#F6F4EF;
+    --paper-dim:#EAE7DD;
+    --cube-red:#E6402A;
+    --cube-yellow:#F2B705;
+    --cube-green:#1E8E5A;
+    --cube-blue:#1758C4;
+    --cube-orange:#F2660D;
+    --line:#D9D5C8;
+    --text-dim:#6B7280;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(246,244,239,0.9);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1120px;margin:0 auto;padding:16px 28px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.01em;}
+  .logo-mark{
+    height:36px;width:auto;flex-shrink:0;
+  }
+  footer .logo-mark{
+    filter:brightness(0) invert(1);
+  }
+  .nav-links{display:flex;align-items:center;gap:28px;font-size:14.5px;font-weight:500;}
+  .nav-links .active{position:relative;}
+  .nav-links .active::after{
+    content:"";position:absolute;left:0;right:0;bottom:-19px;height:2px;background:var(--ink);
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px;
+    border:1px solid transparent;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--ink);color:var(--paper);}
+  .btn-primary:hover{box-shadow:0 6px 16px rgba(18,23,43,0.3);}
+  .btn-outline{border-color:var(--ink);}
+  .btn-solid-red{background:var(--cube-red);color:#fff;}
+  .btn-solid-red:hover{box-shadow:0 6px 16px rgba(230,64,42,0.35);}
+  .nav-cta{display:flex;gap:10px;align-items:center;}
+  .results-caret{font-size:11px;opacity:.6;margin-left:2px;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;overflow:hidden;
+    background:radial-gradient(120% 140% at 15% 0%, #202749 0%, var(--ink) 55%, #0C1022 100%);
+    color:var(--paper);
+    padding:64px 0 0;
+  }
+  .scramble-strip{
+    position:absolute;inset:0;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.12em;
+    color:rgba(246,244,239,0.05);
+    line-height:2.4;padding:20px;white-space:pre-wrap;
+    pointer-events:none;user-select:none;
+  }
+  .hero-inner{position:relative;z-index:2;text-align:center;padding:20px 28px 0;}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--cube-yellow);border:1px solid rgba(242,183,5,0.4);
+    padding:6px 14px;border-radius:999px;margin-bottom:22px;
+  }
+  .eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--cube-red);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+  h1.hero-title{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:clamp(38px,7vw,74px);line-height:0.98;letter-spacing:-0.02em;
+    margin-bottom:16px;
+  }
+  h1.hero-title .accent{color:var(--cube-orange);}
+  .hero-sub{
+    font-size:16.5px;color:rgba(246,244,239,0.7);max-width:520px;margin:0 auto 34px;
+    font-weight:400;
+  }
+  .hero-actions{display:flex;justify-content:center;gap:14px;margin-bottom:48px;flex-wrap:wrap;}
+  .btn-ghost-light{border:1px solid rgba(246,244,239,0.35);color:var(--paper);background:transparent;}
+  .btn-ghost-light:hover{background:rgba(246,244,239,0.08);}
+
+  /* Timer row — signature element */
+  .timer-row{
+    display:flex;justify-content:center;gap:10px;flex-wrap:wrap;
+    padding:0 20px 40px;position:relative;z-index:2;
+  }
+  .timer-card{
+    background:var(--ink-soft);border:1px solid rgba(246,244,239,0.08);
+    border-radius:14px;padding:12px 14px;min-width:82px;text-align:center;
+    box-shadow:0 10px 24px rgba(0,0,0,0.25);
+  }
+  .timer-lane{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(246,244,239,0.45);
+    letter-spacing:0.1em;margin-bottom:6px;
+  }
+  .timer-display{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:28px;
+    color:var(--cube-green);
+  }
+  .timer-card:nth-child(4n+2) .timer-display{color:var(--cube-red);}
+  .timer-card:nth-child(4n+3) .timer-display{color:var(--cube-yellow);}
+  .timer-card:nth-child(4n+4) .timer-display{color:var(--cube-blue);}
+
+  .hero-photo-fade{
+    height:70px;background:linear-gradient(180deg, transparent, var(--paper));
+    position:relative;z-index:2;
+  }
+
+  /* ---------- INFO GRID ---------- */
+  .info-section{padding:64px 0 20px;}
+  .info-grid{
+    display:grid;grid-template-columns:1.15fr 1fr;gap:22px;
+  }
+  @media(max-width:860px){.info-grid{grid-template-columns:1fr;}}
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;
+  }
+  .card-label{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--text-dim);margin-bottom:14px;
+  }
+  .card h3{font-family:'Space Grotesk',sans-serif;font-size:19px;margin-bottom:14px;}
+
+  .detail-row{display:flex;gap:12px;margin-bottom:16px;}
+  .detail-row:last-child{margin-bottom:0;}
+  .detail-icon{
+    width:32px;height:32px;border-radius:8px;background:var(--paper-dim);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;
+  }
+  .detail-text .k{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin-bottom:2px;}
+  .detail-text .v{font-weight:600;font-size:14.5px;}
+
+  .map-box{
+    margin-top:16px;height:110px;border-radius:12px;overflow:hidden;position:relative;
+    background:
+      linear-gradient(135deg,#DCE7DD 25%, transparent 25%) -8px 0/16px 16px,
+      linear-gradient(225deg,#DCE7DD 25%, transparent 25%) -8px 0/16px 16px,
+      linear-gradient(45deg,#DCE7DD 25%, transparent 25%) 0 0/16px 16px,
+      linear-gradient(315deg,#DCE7DD 25%, #EFF3EF 25%) 0 0/16px 16px;
+  }
+  .map-pin{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);
+    width:26px;height:26px;border-radius:50% 50% 50% 0;background:var(--cube-red);
+    rotate:-45deg;box-shadow:0 4px 10px rgba(0,0,0,0.25);
+  }
+
+  .event-list{list-style:none;}
+  .event-item{
+    display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line);
+  }
+  .event-item:first-child{border-top:none;padding-top:0;}
+  .event-swatch{width:26px;height:26px;border-radius:7px;flex-shrink:0;}
+  .event-item .name{font-weight:600;font-size:14.5px;flex:1;}
+  .event-item .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);}
+
+  /* ---------- SPONSOR ---------- */
+  .sponsor{padding:16px 0 72px;}
+  .sponsor-card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px;
+  }
+  .sponsor-body{display:flex;gap:22px;align-items:flex-start;}
+  .sponsor-mark{
+    width:56px;height:56px;border-radius:12px;flex-shrink:0;
+    background:var(--ink);color:var(--cube-yellow);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.02em;
+  }
+  .sponsor-body h3{font-family:'Space Grotesk',sans-serif;font-size:20px;margin-bottom:8px;}
+  .sponsor-body p{font-size:14.5px;line-height:1.65;color:#3B4152;max-width:680px;}
+  @media(max-width:640px){.sponsor-body{flex-direction:column;}}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--ink);color:rgba(246,244,239,0.65);padding:40px 0;font-size:13px;
+  }
+  .footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  footer .logo{color:var(--paper);}
+
+  @media(max-width:640px){
+    .nav-links{display:none;}
+    .timer-card{min-width:78px;padding:11px 12px;}
+    .timer-display{font-size:22px;}
+
+    .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    margin-bottom: 16px;
+    color: var(--ink);
+    border-bottom: 2px solid var(--paper-dim);
+    padding-bottom: 8px;
+  }
+
+  /* LISTS & TABLES */
+  ul { list-style-type: disc; padding-left: 20px; line-height: 1.6; color: var(--text-dim); }
+  li { margin-bottom: 8px; color:var(--text-dim); }
+  li strong { color: var(--ink); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; text-align: left; }
+  th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th { background: var(--paper-dim); font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">
+      <img src="FKS Logo.png" class="logo-mark">
+      FKS Cubing Open
+    </div>
+    <div class="nav-links">
+      <a href="#" class="active">Home</a>
+      <a href="competitions">Competitions</a>      
+      <a href="schedule">Schedule</a>
+      <a href="overview">Overview</a>
+      <a href="results">Results</a>
+      <a href="login">Login</a>
+    </div>
+    <div class="nav-cta">
+      <a href="registration" class="btn btn-solid-red">Register</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="scramble-strip">R U R' U' F2 L D2 B' R2 U' L' F R2 D B2 L2 U2 F' R U2 L' B D' R2 F2 U' L2 D B' R U' F2 L D2 B' R2 U' L' F R2 D B2 L2 U2 F' R U2 L' B D' R2 F2 U' L2 D B' R U' F2 L D2 B' R2 U' L' F R2 D B2 L2 U2 F' R U2 L' B D' R2 F2 U' L2 D B' R U' F2 L D2 B' R2 U' L' F R2 D B2 L2 U2 F' R U2 L' B D' R2 F2 U' L2 D B'</div>
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> Intraschool Open Speedcubing Competition · October 3, 2026</div>
+    <h1 class="hero-title">Welcome to<br>FKS <span class="accent">Cubing</span> Open 2026</h1>
+    <p class="hero-sub">An open event for young cubers who just want to turn and twist cubes — one Saturday, five events, twelve stations to show what they've got.</p>
+    <div class="hero-actions">
+      <a href="registration.html" class="btn btn-solid-red">Register Now</a>
+      <a href="schedule.html" class="btn btn-ghost-light">View Schedule</a>
+    </div>
+  </div>
+  <div class="timer-row">
+    <div class="timer-card" data-station="1"><div class="timer-lane">STATION 1</div><div class="timer-display" id="st-disp-1">00.00</div></div>
+    <div class="timer-card" data-station="2"><div class="timer-lane">STATION 2</div><div class="timer-display" id="st-disp-2">00.00</div></div>
+    <div class="timer-card" data-station="3"><div class="timer-lane">STATION 3</div><div class="timer-display" id="st-disp-3">00.00</div></div>
+    <div class="timer-card" data-station="4"><div class="timer-lane">STATION 4</div><div class="timer-display" id="st-disp-4">00.00</div></div>
+    <div class="timer-card" data-station="5"><div class="timer-lane">STATION 5</div><div class="timer-display" id="st-disp-5">00.00</div></div>
+    <div class="timer-card" data-station="6"><div class="timer-lane">STATION 6</div><div class="timer-display" id="st-disp-6">00.00</div></div>
+    <div class="timer-card" data-station="7"><div class="timer-lane">STATION 7</div><div class="timer-display" id="st-disp-7">00.00</div></div>
+    <div class="timer-card" data-station="8"><div class="timer-lane">STATION 8</div><div class="timer-display" id="st-disp-8">00.00</div></div>
+    <div class="timer-card" data-station="9"><div class="timer-lane">STATION 9</div><div class="timer-display" id="st-disp-9">00.00</div></div>
+    <div class="timer-card" data-station="10"><div class="timer-lane">STATION 10</div><div class="timer-display" id="st-disp-10">00.00</div></div>
+    <div class="timer-card" data-station="11"><div class="timer-lane">STATION 11</div><div class="timer-display" id="st-disp-9">00.00</div></div>
+    <div class="timer-card" data-station="12"><div class="timer-lane">STATION 12</div><div class="timer-display" id="st-disp-10">00.00</div></div>
+  
+  
+  </div>
+  <div class="hero-photo-fade"></div>
+</header>
+
+<section class="info-section wrap" id="events">
+  <div class="info-grid">
+    <div class="card">
+      <div class="card-label">Event Details</div>
+      <div class="detail-row">
+        <div class="detail-icon">📅</div>
+        <div class="detail-text"><div class="k">Date</div><div class="v">Saturday, October 3, 2026</div></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-icon">📍</div>
+        <div class="detail-text"><div class="k">Location</div><div class="v">The Future Kid's School, Hyderabad</div></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-icon">⏱️</div>
+        <div class="detail-text"><div class="k">Stations</div><div class="v">10 timing stations</div></div>
+      </div>
+      <div class="map-box"><div class="map-pin"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Events Offered</div>
+      <ul class="event-list">
+        <li class="event-item"><span class="event-swatch" style="background:var(--cube-red);"></span><span class="name">3×3×3</span><span class="tag">Cube</span></li>
+        <li class="event-item"><span class="event-swatch" style="background:var(--cube-yellow);"></span><span class="name">2×2×2</span><span class="tag">Pocket Cube</span></li>
+        <li class="event-item"><span class="event-swatch" style="background:var(--cube-green);"></span><span class="name">Megaminx</span><span class="tag">Supernova</span></li>
+        <li class="event-item"><span class="event-swatch" style="background:var(--cube-blue);"></span><span class="name">Pyraminx</span><span class="tag">Tetrahedron</span></li>
+         <li class="event-item"><span class="event-swatch" style="background:var(--cube-orange);"></span><span class="name">4x4x4</span><span class="tag">Revenge</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sponsor wrap">
+  <div class="sponsor-card">
+    <div class="card-label">Our Sponsor</div>
+    <div class="sponsor-body">
+      <div class="sponsor-mark">DC</div>
+      <div>
+        <h3>Deccan Cubing</h3>
+      <p>Deccan Cubing is a premier, non-profit community organization founded in 2017 that is dedicated to cultivating speedcubing across Hyderabad and South India. Operating as the regional cornerstone for the speedcubing community, the organization bridges passion and professional mind sports, using the traditional household puzzle to foster cognitive development, concentration, and spatial awareness among youth. In strategic alliance with the World Cube Association (WCA) and the Indian Cube Federation, Deccan Cubing hosts official, globally recognized tournaments such as the DC Hyderabad Open, alongside training camps and community meets. These high-footfall events draw hundreds of participants and thousands of spectators, creating valuable touchpoints for sponsors to connect with tech-minded young adults, students, and parents.
+        <br>The organization was pioneered by world-renowned speedcuber Pavan Kumar Akula, who held a World No. 1 ranking in the 3x3 blindfolded category in 2013 and holds multiple Guinness, Asian, and Limca world records. Driven by his vision to democratize puzzle solving and nurture future intellectual champions, Pavan leads the community alongside his brother Sai Kumar. Together known as the 'Mosaic Brothers', their combined experience as elite competitors and WCA delegate leadership ensures that every Deccan Cubing event adheres to strict world-class organizational standards.</p>
+       
+  
+  </div>
+</main>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="logo">
+      <img src="FKS Logo.png" class="logo-mark">
+      FKS Cubing Open
+    </div>
+  </div>
+</footer>
+<script>
+  const RESULTS_API_URL = "https://script.google.com/macros/s/AKfycbwRzpzNMKGX-Cd9Xoosy8WNbwj6NiVGAzoD6AJgCH-dSb39CQvDBbthAO10rzO7Hllq/exec";
+
+  function fetchStationTimings() {
+    fetch(`${RESULTS_API_URL}?action=stations`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.stations) {
+          updateStationDisplays(data.stations);
+        }
+      })
+      .catch(err => console.error("Error fetching station timings:", err));
+  }
+
+  function formatSolveTime(val) {
+    if (val === null || val === undefined || val === "" || val === "-" || val === 0) return null;
+    
+    // Parse numeric value
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 0) {
+      return num.toFixed(2);
+    }
+    
+    // If it's already a formatted string like "12.34"
+    if (typeof val === 'string' && val.trim().length > 0) {
+      return val.trim();
+    }
+    return null;
+  }
+
+  function getLatestSolveTime(stationData) {
+    if (!stationData) return "00.00";
+
+    // Priority: Solve3 -> Solve2 -> Solve1 -> Best
+    const s3 = formatSolveTime(stationData.Solve3);
+    const s2 = formatSolveTime(stationData.Solve2);
+    const s1 = formatSolveTime(stationData.Solve1);
+
+    if (s3) return s3;
+    if (s2) return s2;
+    if (s1) return s1;
+
+    const best = formatSolveTime(stationData.Best);
+    if (best) return best;
+
+    return "00.00";
+  }
+
+  function updateStationDisplays(stations) {
+    // Convert stations object or array into a standard array
+    const stationList = Array.isArray(stations) ? stations : Object.values(stations);
+
+    for (let i = 1; i <= 12; i++) {
+      const displayEl = document.getElementById(`st-disp-${i}`) || 
+                        document.querySelector(`.timer-card[data-station="${i}"] .timer-display`);
+
+      if (displayEl) {
+        // Find the record where Station property matches current station number i
+        const stationData = stationList.find(s => {
+          if (!s) return false;
+          // Matches numeric 1 or string "1" or "Station 1"
+          return s.Station == i || s.Station === `Station ${i}` || s.Station === `station${i}`;
+        });
+
+        const timeToDisplay = getLatestSolveTime(stationData);
+        displayEl.innerText = timeToDisplay;
+      }
+    }
+  }
+
+  // Poll Google Sheets every 3 seconds for real-time live updates
+  setInterval(fetchStationTimings, 3000);
+
+  // Initial fetch on page load
+  document.addEventListener("DOMContentLoaded", fetchStationTimings);
+</script>
+
+</body>
+</html>
