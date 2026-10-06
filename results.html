@@ -5,348 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Results — FKS Cubing Open 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --ink: #12172B;
-    --paper: #F6F4EF;
-    --paper-dim: #EAE7DD;
-    --cube-red: #E6402A;
-    --line: #D9D5C8;
-    --text-dim: #6B7280;
-    --qualify-green: #1F9D55;
-    --qualify-bg: #E6F5EC;
+  :root{
+    --ink:#12172B;
+    --paper:#F6F4EF;
+    --paper-dim:#EAE7DD;
+    --cube-red:#E6402A;
+    --line:#D9D5C8;
+    --text-dim:#6B7280;
+    --qualify-green:#1F9D55;
+    --qualify-bg:#E6F5EC;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Inter', sans-serif;
-    -webkit-font-smoothing: antialiased;
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
   }
-  a { color: inherit; text-decoration: none; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
 
   /* ---------- NAV ---------- */
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    background: rgba(246,244,239,0.9);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--line);
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(246,244,239,0.9);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
   }
-  .nav-inner {
-    max-width: 1120px; margin: 0 auto; padding: 16px 28px;
-    display: flex; align-items: center; justify-content: space-between;
+  .nav-inner{
+    max-width:1120px;margin:0 auto;padding:16px 28px;
+    display:flex;align-items:center;justify-content:space-between;
   }
-  .logo { display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
-
-  /* ---------- PAGE HEADER ---------- */
-  .page-header {
-    background: radial-gradient(120% 140% at 15% 0%, #202749 0%, var(--ink) 55%, #0C1022 100%);
-    color: var(--paper); padding: 48px 0 36px;
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.01em;}
+  .logo-mark{
+    height:36px;width:auto;flex-shrink:0;
   }
-  .header-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: space-between; }
-  .header-left { display: flex; align-items: center; gap: 16px; }
-  .event-badge {
-    width: 52px; height: 52px; border-radius: 13px; background: var(--cube-red); flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; color: #fff;
+  footer .logo-mark{
+    filter:brightness(0) invert(1);
   }
-  .page-header h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(26px, 4vw, 36px); }
-  .page-header .sub { color: rgba(246,244,239,0.65); font-size: 14px; margin-top: 4px; }
-  .event-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
-  .event-pill {
-    font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 7px 14px; border-radius: 999px;
-    border: 1px solid rgba(246,244,239,0.25); color: rgba(246,244,239,0.65); cursor: pointer; background: transparent;
-  }
-  .event-pill.current { background: var(--cube-red); border-color: var(--cube-red); color: #fff; }
-
-  /* ---------- TABS ---------- */
-  .results-section { padding: 40px 0 40px; }
-  .age-group-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-  .agegroup-pill {
-    font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 999px;
-    border: 1px solid var(--line); color: var(--text-dim); cursor: pointer; background: #fff;
-  }
-  .agegroup-pill.active { background: var(--ink); border-color: var(--ink); color: #fff; }
-  
-  .round-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
-  .round-tab {
-    font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600;
-    padding: 11px 6px; color: var(--text-dim); cursor: pointer; position: relative; background: none; border: none;
-    margin-right: 22px;
-  }
-  .round-tab.active { color: var(--ink); }
-  .round-tab.active::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--cube-red);
-  }
-
-  /* ---------- ADVANCEMENT / PODIUM NOTE ---------- */
-  .advance-note {
-    display: none; align-items: center; gap: 8px; margin-bottom: 16px;
-    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--qualify-green); font-weight: 600;
-  }
-  .advance-note .swatch { width: 12px; height: 12px; border-radius: 3px; background: var(--qualify-bg); border: 2px solid var(--qualify-green); }
-
-  /* ---------- TABLE ---------- */
-  .results-table-wrap { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  thead th {
-    text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-dim); padding: 13px 16px; border-bottom: 1px solid var(--line); background: #FAF9F5;
-  }
-  tbody td { padding: 14px 16px; border-bottom: 1px solid var(--line); color: var(--ink); }
-  tbody tr:last-child td { border-bottom: none; }
-
-  /* ---------- HIGHLIGHT STYLES (Identical dimensions across all rounds) ---------- */
-  tr.qualify-top6 { background-color: var(--qualify-bg) !important; }
-  tr.qualify-top6 td:first-child { border-left: 4px solid var(--qualify-green); }
-  .qualify-badge {
-    display: inline-block; padding: 2px 7px; border-radius: 10px;
-    background-color: var(--qualify-green); color: #fff;
-    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; margin-left: 6px;
-  }
-
-  tr.podium-1 { background-color: #FEF3C7 !important; }
-  tr.podium-1 td:first-child { border-left: 4px solid #D97706; }
-  .podium-badge-1 { display: inline-block; background-color: #D97706; color: #fff; padding: 2px 7px; border-radius: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; margin-left: 6px; }
-
-  tr.podium-2 { background-color: #F1F5F9 !important; }
-  tr.podium-2 td:first-child { border-left: 4px solid #64748B; }
-  .podium-badge-2 { display: inline-block; background-color: #64748B; color: #fff; padding: 2px 7px; border-radius: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; margin-left: 6px; }
-
-  tr.podium-3 { background-color: #FFEDD5 !important; }
-  tr.podium-3 td:first-child { border-left: 4px solid #C2410C; }
-  .podium-badge-3 { display: inline-block; background-color: #C2410C; color: #fff; padding: 2px 7px; border-radius: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; margin-left: 6px; }
-
-  .empty-state { padding: 40px; text-align: center; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
-</style>
-</head>
-<body>
-
-<nav>
-  <div class="nav-inner">
-    <div class="logo">FKS CUBING OPEN 2026</div>
-  </div>
-</nav>
-
-<header class="page-header">
-  <div class="wrap">
-    <div class="header-row">
-      <div class="header-left">
-        <div class="event-badge" id="eventBadge">3x3</div>
-        <div>
-          <h1 id="pageTitle">Live Results</h1>
-          <div class="sub">Official Standings &amp; Timings</div>
-        </div>
-      </div>
-    </div>
-    <div class="event-nav" id="eventNav">
-      <button class="event-pill current" onclick="switchEvent('3x3')">3x3</button>
-      <button class="event-pill" onclick="switchEvent('2x2')">2x2</button>
-      <button class="event-pill" onclick="switchEvent('Pyraminx')">Pyraminx</button>
-      <button class="event-pill" onclick="switchEvent('4x4')">4x4</button>
-      <button class="event-pill" onclick="switchEvent('Megaminx')">Megaminx</button>
-    </div>
-  </div>
-</header>
-
-<main class="wrap results-section">
-  <!-- Age Group Tabs -->
-  <div class="age-group-tabs">
-    <button class="agegroup-pill active" onclick="switchAgeGroup('5-6')">Grades 5–6</button>
-    <button class="agegroup-pill" onclick="switchAgeGroup('7-9')">Grades 7–9</button>
-  </div>
-
-  <!-- Round Tabs -->
-  <div class="round-tabs" id="roundTabs">
-    <!-- Populated dynamically -->
-  </div>
-
-  <!-- Advancement / Round Note -->
-  <div class="advance-note" id="advanceNote">
-    <span class="swatch"></span>
-    <span id="advanceNoteText">Top 6 competitors advance to the Final round</span>
-  </div>
-
-  <!-- Results Table (Identical structure for First Round, Second Round, and Final) -->
-  <div class="results-table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Competitor</th>
-          <th>Solve 1</th>
-          <th>Solve 2</th>
-          <th>Solve 3</th>
-          <th>Average</th>
-          <th>Best</th>
-        </tr>
-      </thead>
-      <tbody id="resultsTbody">
-        <tr><td colspan="7" class="empty-state">Loading results…</td></tr>
-      </tbody>
-    </table>
-  </div>
-</main>
-
-<script>
-  const RESULTS_API_URL = "https://script.google.com/macros/s/AKfycbwRzpzNMKGX-Cd9Xoosy8WNbwj6NiVGAzoD6AJgCH-dSb39CQvDBbthAO10rzO7Hllq/exec";
-
-  const EVENT_ROUNDS = {
-    "3x3": ["First Round", "Second Round", "Final"],
-    "2x2": ["First Round", "Second Round", "Final"],
-    "Pyraminx": ["First Round", "Second Round", "Final"],
-    "4x4": ["Final"],
-    "Megaminx": ["Final"]
-  };
-
-  const TOP6_QUALIFYING_EVENTS = ["3x3", "2x2", "Pyraminx"];
-
-  let currentEvent = "3x3";
-  let currentAgeGroup = "5-6";
-  let currentRound = "First Round";
-  let rawResults = [];
-
-  function init() {
-    renderRoundTabs();
-    fetchResults();
-  }
-
-  function fetchResults() {
-    fetch(RESULTS_API_URL)
-      .then(res => res.json())
-      .then(data => {
-        rawResults = data.results || [];
-        renderTable();
-      })
-      .catch(err => {
-        console.error("Error loading results:", err);
-        document.getElementById("resultsTbody").innerHTML =
-          `<tr><td colspan="7" class="empty-state">Unable to load live results.</td></tr>`;
-      });
-  }
-
-  function switchEvent(ev) {
-    currentEvent = ev;
-    document.getElementById("eventBadge").innerText = ev;
-    document.querySelectorAll(".event-pill").forEach(btn => {
-      btn.classList.toggle("current", btn.innerText === ev);
-    });
-    const rounds = EVENT_ROUNDS[ev] || ["Final"];
-    currentRound = rounds[0];
-    renderRoundTabs();
-    renderTable();
-  }
-
-  function switchAgeGroup(group) {
-    currentAgeGroup = group;
-    document.querySelectorAll(".agegroup-pill").forEach(btn => {
-      btn.classList.toggle("active", btn.innerText.includes(group === "5-6" ? "5–6" : "7–9"));
-    });
-    renderTable();
-  }
-
-  function switchRound(round) {
-    currentRound = round;
-    document.querySelectorAll(".round-tab").forEach(btn => {
-      btn.classList.toggle("active", btn.innerText === round);
-    });
-    renderTable();
-  }
-
-  function renderRoundTabs() {
-    const rounds = EVENT_ROUNDS[currentEvent] || ["Final"];
-    if (!rounds.includes(currentRound)) currentRound = rounds[0];
-    const container = document.getElementById("roundTabs");
-    container.innerHTML = rounds.map(r =>
-      `<button class="round-tab ${r === currentRound ? 'active' : ''}" onclick="switchRound('${r}')">${r}</button>`
-    ).join("");
-  }
-
-  function gradeToGroup(g) {
-    const digit = String(g).match(/\d+/);
-    if (!digit) return "5-6";
-    const n = parseInt(digit[0], 10);
-    return (n === 5 || n === 6) ? "5-6" : "7-9";
-  }
-
-  function renderTable() {
-    const isFinalRound = (currentRound === "Final");
-    const isTop6Event = TOP6_QUALIFYING_EVENTS.includes(currentEvent);
-
-    // Update Banner Note
-    const advanceNote = document.getElementById("advanceNote");
-    const advanceNoteText = document.getElementById("advanceNoteText");
-    if (!isFinalRound && isTop6Event) {
-      advanceNote.style.display = "flex";
-      advanceNoteText.innerText = "Top 6 competitors advance to the Final round";
-    } else {
-      advanceNote.style.display = "none";
-    }
-
-    // Filter results matching event, age group, and round
-    const filtered = rawResults.filter(r => {
-      const evMatch = (r.Event === currentEvent);
-      const groupMatch = (gradeToGroup(r.Grade) === currentAgeGroup);
-      const roundMatch = (r.Round === currentRound || (r.Round && r.Round.startsWith(currentRound)));
-      return evMatch && groupMatch && roundMatch;
-    });
-
-    // Sort by Average then Best (Identical logic across all rounds)
-    filtered.sort((a, b) => {
-      const valA = parseFloat(a.Average || a.Best) || 999999;
-      const valB = parseFloat(b.Average || b.Best) || 999999;
-      return valA - valB;
-    });
-
-    const tbody = document.getElementById("resultsTbody");
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No timings recorded for this round yet.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = filtered.map((row, index) => {
-      const rank = index + 1;
-      let trClass = "";
-      let rankBadge = `${rank}`;
-
-      if (isFinalRound) {
-        // Final Round Podium Highlights
-        if (rank === 1) {
-          trClass = "podium-1";
-          rankBadge += ` <span class="podium-badge-1">1st 🥇</span>`;
-        } else if (rank === 2) {
-          trClass = "podium-2";
-          rankBadge += ` <span class="podium-badge-2">2nd 🥈</span>`;
-        } else if (rank === 3) {
-          trClass = "podium-3";
-          rankBadge += ` <span class="podium-badge-3">3rd 🥉</span>`;
-        }
-      } else if (isTop6Event) {
-        // Qualification Round Top 6 Highlight
-        if (rank <= 6) {
-          trClass = "qualify-top6";
-          rankBadge += ` <span class="qualify-badge">Q</span>`;
-        }
-      }
-
-      // Exactly identical column structure & text formatting as First Round
-      return `
-        <tr class="${trClass}">
-          <td>${rankBadge}</td>
-          <td><strong>${row.Name || '—'}</strong> <span style="color:var(--text-dim);font-size:12px;">(${row.CompetitorID || '—'})</span></td>
-          <td>${row.Solve1 || '—'}</td>
-          <td>${row.Solve2 || '—'}</td>
-          <td>${row.Solve3 || '—'}</td>
-          <td><strong>${row.Average || '—'}</strong></td>
-          <td>${row.Best || '—'}</td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  document.addEventListener("DOMContentLoaded", init);
-</script>
-</body>
-</html>s
+  .nav-links{display:flex;align-items:center;gap:28px;font-size:14.5px;font-weight:500;}
+  .nav-links .active{position:relative;}
+  .nav-links .active::after{
