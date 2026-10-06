@@ -104,16 +104,9 @@
       </div>
       <div class="form-group">
         <label>Round</label>
-        <select id="roundSelect" onchange="toggleStageField(); prefillExistingSolves();">
+        <select id="roundSelect" onchange="prefillExistingSolves()">
           <!-- Dynamically populated -->
         </select>
-      </div>
-      <div class="form-group" id="stageGroup" style="display:none;">
-        <label>Knockout Match</label>
-        <select id="stageSelect" onchange="prefillExistingSolves()">
-          <!-- Populated for knockout Finals: 3x3 (5–6, 7–9) and 2x2 (5–6) -->
-        </select>
-        <div class="hint" id="stageHint"></div>
       </div>
       <div class="form-group">
         <label style="display:flex;justify-content:space-between;align-items:center;">
@@ -147,14 +140,11 @@
   </div>
 </div>
 <script>
-  // DEPLOYED URL FOR YOUR RESULTS SPREADSHEET APPS SCRIPT
   const RESULTS_API_URL = "https://script.google.com/macros/s/AKfycbwRzpzNMKGX-Cd9Xoosy8WNbwj6NiVGAzoD6AJgCH-dSb39CQvDBbthAO10rzO7Hllq/exec";
-  // Same registrations endpoint the "Mark as Paid" admin page uses; feeds the Competitor dropdown.
   const REGISTRATION_API_URL = "https://script.google.com/macros/s/AKfycbyBZ_xge06xvF4sdKAndQKwtQlAhZjvHjl4HgF_1iGvCYzXD4uruJpk01D95D-ASHW7/exec";
 
-  // ---------- Competition structure (must match results.html) ----------
   const EVENT_ROUNDS = {
-    "3x3": ["First Round", "Second Round", "Third Round", "Final"],
+    "3x3": ["First Round", "Second Round", "Final"],
     "2x2": ["First Round", "Second Round", "Final"],
     "Pyraminx": ["First Round", "Second Round", "Final"],
     "4x4": ["Final"],
@@ -163,22 +153,6 @@
 
   function getRounds(eventName, ageGroup) {
     return EVENT_ROUNDS[eventName] || ["Final"];
-  }
-
-  // Knockout ONLY for the 3x3 / 2x2 Final, Grades 5–6 (4-competitor bracket).
-  // Every other round, including the Grades 7–9 Finals, is a normal ranked round.
-  // Knockout Finals (event -> age group -> bracket size). Must match results.html.
-  const KNOCKOUT_BRACKETS = {
-    "3x3": { "5-6": 4, "7-9": 8 },
-    "2x2": { "5-6": 4 }
-  };
-  const KNOCKOUT_ROUND_NAME = "Final";
-  const KNOCKOUT_STAGES_4 = ["Semifinal 1", "Semifinal 2", "Championship", "3rd Place Match"];
-  const KNOCKOUT_STAGES_8 = ["Quarterfinal 1", "Quarterfinal 2", "Quarterfinal 3", "Quarterfinal 4"].concat(KNOCKOUT_STAGES_4);
-  function currentBracketSize() {
-    const ev = document.getElementById("eventSelect").value;
-    const group = ageGroupForGrade(document.getElementById("gradeSelect").value);
-    return (KNOCKOUT_BRACKETS[ev] && KNOCKOUT_BRACKETS[ev][group]) || 0;
   }
 
   const TWO_SOLVE_EVENTS = ["Megaminx", "4x4"];
@@ -192,19 +166,10 @@
     const n = parseInt(gradeDigit(grade), 10);
     return (n === 5 || n === 6) ? "5-6" : "7-9";
   }
-  function isKnockoutSelection() {
-    const ev = document.getElementById("eventSelect").value;
-    const round = document.getElementById("roundSelect").value;
-    const group = ageGroupForGrade(document.getElementById("gradeSelect").value);
-    return round === KNOCKOUT_ROUND_NAME && currentBracketSize() > 0;
-  }
   function isTwoSolveEvent() {
     return TWO_SOLVE_EVENTS.includes(document.getElementById("eventSelect").value);
   }
 
-  // ---------- Solve parsing ----------
-  // Accepts "14.52", "65.2", "1:05.20", "DNF", "DNS". Stored as plain seconds
-  // ("65.20") so Google Sheets never auto-converts it into a clock time.
   function parseSolveInput(raw) {
     const s = String(raw || "").trim().toUpperCase();
     if (s === "" || s === "-") return { empty: true };
@@ -222,7 +187,6 @@
     return ids.map(id => document.getElementById(id));
   }
 
-  // ---------- Live pre-fill of already-entered solves ----------
   let allResultsData = [];
 
   function fetchExistingResults(callback) {
@@ -233,12 +197,8 @@
       .finally(() => { if (callback) callback(); });
   }
 
-  // Same Round tag submitTimings() sends (e.g. "Final — 5-6 — Semifinal 1")
   function currentRoundTag() {
-    const roundVal = document.getElementById("roundSelect").value;
-    const stageVal = document.getElementById("stageSelect").value;
-    const ageGroup = ageGroupForGrade(document.getElementById("gradeSelect").value);
-    return isKnockoutSelection() && stageVal ? `${roundVal} — ${ageGroup} — ${stageVal}` : roundVal;
+    return document.getElementById("roundSelect").value;
   }
 
   function findExistingResultRow() {
@@ -289,7 +249,6 @@
     fetchExistingResults(prefillExistingSolves);
   }
 
-  // ---------- Competitor picker ----------
   let allRegisteredCompetitors = [];
 
   function normalizeRegistration(c) {
@@ -301,9 +260,11 @@
       paymentStatus: String(c.PaymentStatus || c["Payment Status"] || c.paymentStatus || c.FeeStatus || c.feeStatus || "Pending")
     };
   }
+
   function hasEvent(c, key) {
     return c.events.split(",").map(e => e.trim().toLowerCase()).includes(key.toLowerCase());
   }
+
   function escAttr(s) {
     return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
   }
@@ -320,8 +281,7 @@
       })
       .catch(err => {
         console.error("Error loading registered competitors:", err);
-        document.getElementById("competitorSelect").innerHTML =
-          `<option value="">Failed to load competitor list</option>`;
+        document.getElementById("competitorSelect").innerHTML = `<option value="">Failed to load competitor list</option>`;
       })
       .finally(() => {
         if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.innerText = "↻ Refresh"; }
@@ -357,7 +317,6 @@
     prefillExistingSolves();
   }
 
-  // Grades 5–6 don't run Megaminx or 4x4
   function updateEventAvailability() {
     const group = ageGroupForGrade(document.getElementById("gradeSelect").value);
     const restricted = group === "5-6";
@@ -378,38 +337,15 @@
     roundSel.innerHTML = rounds.map(r => `<option value="${r}">${r}</option>`).join("");
     if (rounds.includes(prev)) roundSel.value = prev;
     updateSolveFields();
-    toggleStageField();
     populateCompetitorDropdown();
   }
 
-  // Megaminx / 4x4 are 2-solve events: hide Solve 3
   function updateSolveFields() {
     const two = isTwoSolveEvent();
     const s3 = document.getElementById("s3");
     s3.style.display = two ? "none" : "";
     if (two) s3.value = "";
     document.getElementById("solvesRow").classList.toggle("two-solve", two);
-  }
-
-  function toggleStageField() {
-    const stageGroup = document.getElementById("stageGroup");
-    const stageSelect = document.getElementById("stageSelect");
-    const stageHint = document.getElementById("stageHint");
-    if (isKnockoutSelection()) {
-      const prev = stageSelect.value;
-      stageGroup.style.display = "block";
-      const size = currentBracketSize();
-      const stages = size === 8 ? KNOCKOUT_STAGES_8 : KNOCKOUT_STAGES_4;
-      stageSelect.innerHTML = stages.map(s => `<option value="${s}">${s}</option>`).join("");
-      if (stages.includes(prev)) stageSelect.value = prev;
-      stageHint.innerText = (size === 8
-        ? "8-competitor bracket: QF1 #1 v #8, QF2 #4 v #5, QF3 #2 v #7, QF4 #3 v #6. Then Semifinals, Championship and 3rd Place."
-        : "4-competitor bracket: SF1 #1 v #4, SF2 #2 v #3. Then Championship and 3rd Place.")
-        + " Submit once per competitor: enter both players' solves separately for the same match.";
-    } else {
-      stageGroup.style.display = "none";
-      stageSelect.innerHTML = "";
-    }
   }
 
   function submitTimings(e) {
@@ -419,7 +355,6 @@
     if (!compId) { alert("Select a competitor first."); return; }
     const compName = competitorSelect.selectedOptions[0].dataset.name;
 
-    // Parse and validate solves
     const inputs = solveInputs();
     const parsed = inputs.map(el => parseSolveInput(el.value));
     let bad = false;
@@ -436,7 +371,6 @@
     }
     const [p1, p2, p3] = [parsed[0], parsed[1], parsed[2] || { empty: true }];
 
-    // Don't silently wipe a solve that's already saved
     const existingRow = findExistingResultRow();
     if (existingRow) {
       const wiped = [];
@@ -445,20 +379,17 @@
       if (!isTwoSolveEvent() && savedVal(existingRow.Solve3) && p3.empty) wiped.push(`Solve 3 (${existingRow.Solve3})`);
       if (wiped.length > 0) {
         const proceed = confirm(
-          `This competitor already has ${wiped.join(", ")} saved for this round, but the form is about to submit ` +
-          `that as blank. Saving now will erase it. Continue anyway?`
+          `This competitor already has ${wiped.join(", ")} saved for this round. Saving blank values will erase them. Proceed?`
         );
         if (!proceed) return;
       }
     }
 
-    // Best = fastest valid solve. All entered solves DNF -> "DNF". Nothing entered -> blank.
     const entered = parsed.filter(p => !p.empty);
     const valid = entered.filter(p => !p.dnf);
     const best = valid.length ? Math.min(...valid.map(p => p.secs)).toFixed(2)
                : entered.length ? "DNF" : "";
 
-    // Average (Ao3 events only): shown once all 3 solves are in; any DNF makes it DNF.
     let avg = "";
     if (!isTwoSolveEvent() && entered.length === 3) {
       avg = entered.some(p => p.dnf) ? "DNF" : (entered.reduce((a, p) => a + p.secs, 0) / 3).toFixed(2);
@@ -496,7 +427,6 @@
       btn.innerText = "Save Timings";
       if (res.success || res.status === "success") {
         alert("Timing saved successfully!");
-        // Keep Station / Grade / Event / Round / Match so the next competitor is quick to enter
         competitorSelect.selectedIndex = 0;
         ["s1", "s2", "s3"].forEach(id => { document.getElementById(id).value = ""; });
         document.getElementById("solvesHint").style.display = "none";
