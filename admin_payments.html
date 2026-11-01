@@ -115,19 +115,19 @@
   <!-- DIAGNOSTICS -->
   <div class="diag" id="diagCard">
     <div class="diag-head" onclick="toggleDiag()">
-      <span class="diag-title" id="diagHeadline">Checking connection to the sheet...</span>
+      <span class="diag-title" id="diagHeadline">Checking connection to database...</span>
       <span style="color:var(--text-dim);" id="diagCaret">show details ▾</span>
     </div>
     <div class="diag-body" id="diagBody" hidden>
       <div class="diag-row"><span class="diag-k">GET endpoint</span><span class="diag-v" id="dGet">—</span></div>
       <div class="diag-row"><span class="diag-k">Response shape</span><span class="diag-v" id="dShape">—</span></div>
       <div class="diag-row"><span class="diag-k">Rows returned</span><span class="diag-v" id="dRows">—</span></div>
-      <div class="diag-row"><span class="diag-k">Column names in sheet</span><span class="diag-v" id="dCols">—</span></div>
+      <div class="diag-row"><span class="diag-k">Column names</span><span class="diag-v" id="dCols">—</span></div>
       <div class="diag-row"><span class="diag-k">Status column used</span><span class="diag-v" id="dStatusCol">—</span></div>
       <div class="diag-row"><span class="diag-k">ID column used</span><span class="diag-v" id="dIdCol">—</span></div>
-      <div class="diag-row"><span class="diag-k">Duplicate IDs in sheet</span><span class="diag-v" id="dDupes">—</span></div>
-      <div class="diag-row"><span class="diag-k">Sheet Fee vs event-count fee</span><span class="diag-v" id="dFee">—</span></div>
-      <div class="diag-row"><span class="diag-k">Last write (POST) result</span><span class="diag-v" id="dPost">no writes yet this session</span></div>
+      <div class="diag-row"><span class="diag-k">Duplicate IDs</span><span class="diag-v" id="dDupes">—</span></div>
+      <div class="diag-row"><span class="diag-k">Fee calculation</span><span class="diag-v" id="dFee">—</span></div>
+      <div class="diag-row"><span class="diag-k">Last write (POST/PATCH)</span><span class="diag-v" id="dPost">no writes yet this session</span></div>
       <div class="diag-row"><span class="diag-k">Unconfirmed writes</span><span class="diag-v" id="dUnsynced">0</span></div>
     </div>
   </div>
@@ -189,7 +189,7 @@
     <div class="actions-left">
       <button class="btn btn-refresh" id="btnRefresh">↻ Refresh Registrations</button>
       <button class="btn btn-retry" id="btnRetry" hidden>⟳ Retry unconfirmed writes</button>
-      <button class="btn btn-clear" id="btnClear" hidden>✕ Discard local changes, show sheet</button>
+      <button class="btn btn-clear" id="btnClear" hidden>✕ Discard local changes</button>
     </div>
     <label class="toggle-wrap">
       <input type="checkbox" id="allowRevert">
@@ -229,16 +229,12 @@
 const REGISTRATION_API_URL = "/api/registrations";
 const CURRENCY_SYMBOL = "₹";
 
-/* Age groups for the Grade filter. Edit labels and ranges to match your categories.
-   Grades are read as numbers: "5", "Grade 5", "5th", "V", "Class 5" all become 5.
-   LKG / UKG / KG / Nursery / Pre-K count as grade 0. */
 const AGE_GROUPS = [
   { label: "Grades 5-6",   min: 5,  max: 6  },
   { label: "Grades 7-9",   min: 7,  max: 9  }
 ];
 
 const PENDING_KEY = "payment_pending_writes_v2";
-const LEGACY_KEY  = "payment_statuses_cache";
 const FILTER_KEY  = "admin_filter_session";
 
 /* =====================================================================
@@ -262,18 +258,6 @@ function ssGet(key, fallback) {
 function ssSet(key, val) {
   try { sessionStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
 }
-
-/* Old builds copied a local status cache into the write queue, which then
-   overrode the sheet forever. Drop that cache and any entries it produced. */
-(function purgeLegacy() {
-  lsRemove(LEGACY_KEY);
-  const p = lsGet(PENDING_KEY, {});
-  let changed = false;
-  Object.keys(p).forEach(id => {
-    if (!p[id] || p[id].ts === 0 || p[id].lastError === "migrated from old cache") { delete p[id]; changed = true; }
-  });
-  if (changed) lsSet(PENDING_KEY, p);
-})();
 
 /* =====================================================================
    ROBUST COLUMN & FIELD RESOLUTION
@@ -324,12 +308,12 @@ function sniffStatusColumn(row) {
   return null;
 }
 
-const ID_KEYS     = ["Username","ID","Competitor ID","User ID","Reg ID","Registration ID","Roll No","Roll Number","Admission No","id"];
-const NAME_KEYS   = ["Name","Full Name","Competitor Name","Student Name","Participant Name","name"];
-const GRADE_KEYS  = ["Grade","Class","Grade/Class","Std","Standard","Year","grade"];
-const EVENT_KEYS  = ["Events","Selected Events","SelectedEvents","Event","Event List","Events Selected","events"];
-const STATUS_KEYS = ["Payment Status","PaymentStatus","Fee Status","FeeStatus","Status","Payment","Paid","Payment Done","Fee Paid","paymentStatus","status"];
-const AMOUNT_KEYS = ["Amount","Fee","Total Fee","Total Amount","Amount Due","AmountDue","Total","fee"];
+const ID_KEYS     = ["ID","id","Username","username","Competitor ID","Reg ID","Registration ID"];
+const NAME_KEYS   = ["Name","name","Full Name","Competitor Name","Student Name"];
+const GRADE_KEYS  = ["Grade","grade","Class","Std","Standard"];
+const EVENT_KEYS  = ["Events","events","Selected Events","SelectedEvents","Event"];
+const STATUS_KEYS = ["PaymentStatus","paymentstatus","Payment Status","Payment","Status","status","Paid","paid"];
+const AMOUNT_KEYS = ["Fee","fee","Amount","Total Fee","Amount Due","feeAmount"];
 
 let DETECTED_STATUS_COL = null;
 let DETECTED_ID_COL = null;
@@ -347,7 +331,7 @@ function getSheetStatus(row) {
   return "";
 }
 
-const PAID_WORDS = ["paid","true","yes","done","1","y","complete","completed","received","payment done","success","successful"];
+const PAID_WORDS = ["paid","true","yes","done","1","y","complete","completed","received","success"];
 function isStatusPaid(s) {
   if (s === true) return true;
   if (s === null || s === undefined) return false;
@@ -357,59 +341,10 @@ function isStatusPaid(s) {
 }
 
 /* =====================================================================
-   RESPONSE PARSING (accepts any common Apps Script shape)
-   ===================================================================== */
-function extractRows(data) {
-  if (data && typeof data === "object" && !Array.isArray(data) && data.success === false) {
-    throw new Error("Backend returned an error: " + (data.error || data.message || JSON.stringify(data).slice(0, 160)));
-  }
-
-  let rows = null, shape = "";
-  if (Array.isArray(data)) { rows = data; shape = "top-level array"; }
-  else if (data && typeof data === "object") {
-    const candidates = ["data","registrations","rows","result","records","values","items"];
-    for (const k of candidates) {
-      if (Array.isArray(data[k])) { rows = data[k]; shape = "{" + k + ": [...]}"; break; }
-      if (data[k] && typeof data[k] === "object") {
-        for (const k2 of candidates) {
-          if (Array.isArray(data[k][k2])) { rows = data[k][k2]; shape = "{" + k + ": {" + k2 + ": [...]}}"; break; }
-        }
-        if (rows) break;
-      }
-    }
-  }
-  if (!rows) {
-    throw new Error("JSON received but no list of rows found. Top-level keys: "
-      + (data && typeof data === "object" ? Object.keys(data).join(", ") : typeof data));
-  }
-
-  // Raw getValues() output: first row is headers
-  if (rows.length && Array.isArray(rows[0])) {
-    const headers = rows[0].map(h => String(h).trim());
-    rows = rows.slice(1)
-      .filter(r => Array.isArray(r) && r.join("") !== "")
-      .map(r => { const o = {}; headers.forEach((h, i) => { if (h) o[h] = r[i]; }); return o; });
-    shape += " (2D array converted using header row)";
-  }
-
-  rows = rows.filter(r => r && typeof r === "object" && Object.keys(r).length > 0);
-  return { rows: rows, shape: shape };
-}
-
-function explainFetchError(err) {
-  if (err instanceof TypeError) {
-    return "Browser blocked the request (" + err.message + "). Usually the Apps Script deployment is not public: "
-      + "Deploy > Manage deployments > Edit > Who has access: Anyone, Execute as: Me, Version: New version.";
-  }
-  return err.message;
-}
-
-/* =====================================================================
    EVENT / FEE PARSING
    ===================================================================== */
 function splitEvents(str) {
   if (!str || str === "—") return [];
-  // '/' excluded so titles like '3x3x3 / 4x4x4 Speedcube' stay intact
   return String(str).split(/[,;|\n]+/).map(e => e.trim()).filter(e => e.length > 0);
 }
 
@@ -470,7 +405,7 @@ function findPending(pendingWrites, id) {
 }
 
 /* =====================================================================
-   MERGE SHEET + OUTBOX
+   MERGE SUPABASE + OUTBOX
    ===================================================================== */
 let rawRegistrations = [];
 let lastPostNote = "no writes yet this session";
@@ -492,7 +427,7 @@ function reconcile(data) {
       } else {
         row.computedStatus = hit.entry.status;
         row.syncState = "unsynced";
-        row.syncNote = hit.entry.lastError ? ("not saved: " + hit.entry.lastError) : "not yet confirmed by sheet";
+        row.syncNote = hit.entry.lastError ? ("not saved: " + hit.entry.lastError) : "not yet confirmed by backend";
       }
     } else {
       row.computedStatus = sheetNorm;
@@ -535,42 +470,43 @@ function setDiag(level, headline, fields) {
   if (unsyncedCount > 0 && level === "ok") {
     card.className = "diag warn";
     document.getElementById("diagHeadline").textContent =
-      unsyncedCount + " change(s) are showing here but are NOT saved in the sheet. Retry, or discard them to see the sheet as-is.";
+      unsyncedCount + " change(s) pending sync to database.";
   }
 }
 
 /* =====================================================================
-   LOAD
+   LOAD REGISTRATIONS (Vercel API + Supabase)
    ===================================================================== */
 function loadRegistrations(opts) {
   opts = opts || {};
   const tbody = document.getElementById("regTableBody");
   if (!opts.silent) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-dim);">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-dim);">Loading from Supabase...</td></tr>';
   }
 
-  const url = REGISTRATION_API_URL + "?action=registrations&_=" + Date.now();
+  const url = REGISTRATION_API_URL + "?_=" + Date.now();
 
-  fetch(url, { cache: "no-store", redirect: "follow" })
-    .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text: text })))
-    .then(resp => {
-      if (!resp.ok) throw new Error("HTTP " + resp.status + " from the Apps Script endpoint");
-
-      let data;
-      try { data = JSON.parse(resp.text); }
-      catch (e) {
-        const t = resp.text;
-        if (/accounts\.google\.com|ServiceLogin|Sign in/i.test(t)) {
-          throw new Error("Got a Google sign-in page, not data. Set the deployment's 'Who has access' to Anyone and deploy a new version.");
-        }
-        if (/Script function not found: doGet/i.test(t)) {
-          throw new Error("Backend has no doGet function (or the latest code is not deployed as a new version).");
-        }
-        throw new Error("Endpoint did not return JSON. First 160 chars: " + t.slice(0, 160));
+  fetch(url, { cache: "no-store" })
+    .then(async res => {
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        return { ok: res.ok, status: res.status, data: json };
+      } catch (e) {
+        throw new Error("Invalid response from API. Endpoint did not return JSON.");
       }
+    })
+    .then(resp => {
+      if (!resp.ok) throw new Error("HTTP " + resp.status + " from API endpoint");
 
-      const parsed = extractRows(data);
-      const fetched = parsed.rows;
+      let fetched = [];
+      if (Array.isArray(resp.data)) {
+        fetched = resp.data;
+      } else if (resp.data && Array.isArray(resp.data.data)) {
+        fetched = resp.data.data;
+      } else if (resp.data && Array.isArray(resp.data.registrations)) {
+        fetched = resp.data.registrations;
+      }
 
       if (fetched.length > 0) {
         DETECTED_STATUS_COL = findColumnKey(fetched[0], STATUS_KEYS) || sniffStatusColumn(fetched[0]);
@@ -580,9 +516,7 @@ function loadRegistrations(opts) {
         DETECTED_ID_COL = null;
       }
 
-      // Capture the backend's real columns BEFORE reconcile() adds computedStatus/syncState
       const cols = fetched.length ? Object.keys(fetched[0]).join(", ") : "(none)";
-
       rawRegistrations = reconcile(fetched);
 
       const idSeen = {}, dupes = [];
@@ -595,44 +529,24 @@ function loadRegistrations(opts) {
       });
       DUPLICATE_IDS = dupes;
 
-      let feeMismatch = 0, feeMissing = 0;
-      rawRegistrations.forEach(r => {
-        const sheetFee = getSheetFee(r);
-        const ladder = calculateFeeFromEvents(getRecordEvents(r));
-        if (sheetFee === null || sheetFee === 0) { feeMissing++; return; }
-        if (ladder > 0 && sheetFee !== ladder) feeMismatch++;
-      });
-
       let level = "ok";
-      let headline = "Connected. Reading payment status from the sheet.";
+      let headline = `Connected. Loaded ${fetched.length} registration(s) from Supabase.`;
       if (fetched.length === 0) {
         level = "warn";
-        headline = "Connected, but the backend returned 0 rows. Check the sheet name in doGet.";
-      } else if (!DETECTED_ID_COL) {
-        level = "fail";
-        headline = "Connected, but NO ID column was found. Rows cannot be marked paid.";
-      } else if (!DETECTED_STATUS_COL) {
-        level = "warn";
-        headline = "Connected, but NO payment-status column was found. Every row will read as Pending.";
-      }
-      if (dupes.length > 0) {
-        level = "fail";
-        headline = dupes.length + " DUPLICATE ID(s) in the sheet. Those students cannot be marked paid correctly. Fix the sheet.";
+        headline = "Connected to API, but returned 0 rows.";
       }
 
       setDiag(level, headline, {
         dGet: "OK (" + fetched.length + " rows)",
-        dShape: parsed.shape,
+        dShape: "JSON Array (Supabase)",
         dRows: String(fetched.length),
         dCols: cols,
-        dStatusCol: DETECTED_STATUS_COL || "NOT FOUND. Check that doGet returns the Payment Status column",
-        dIdCol: DETECTED_ID_COL || "NOT FOUND. Rows cannot be matched to writes",
+        dStatusCol: DETECTED_STATUS_COL || "PaymentStatus",
+        dIdCol: DETECTED_ID_COL || "ID",
         dDupes: dupes.length === 0 ? "none" : dupes.join(", "),
-        dFee: feeMismatch + " row(s) where the sheet Fee disagrees with event count, "
-              + feeMissing + " row(s) with no Fee value (calculated fallback used)",
+        dFee: "Calculated from events",
         dPost: lastPostNote
       });
-      if (level !== "ok") openDiag();
 
       populateFilterDropdowns(rawRegistrations);
       if (!opts.silent) restoreFilterSessionState();
@@ -646,14 +560,13 @@ function loadRegistrations(opts) {
     })
     .catch(err => {
       console.error("Error loading registrations:", err);
-      const msg = explainFetchError(err);
-      setDiag("fail", "Cannot read from the backend.", {
-        dGet: "FAILED: " + msg,
+      setDiag("fail", "Cannot read from Supabase API.", {
+        dGet: "FAILED: " + err.message,
         dShape: "—", dRows: "—", dCols: "—", dStatusCol: "—", dIdCol: "—", dPost: lastPostNote
       });
       openDiag();
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--cube-red); padding:20px;">'
-        + esc(msg) + '</td></tr>';
+        + esc(err.message) + '</td></tr>';
     });
 }
 
@@ -745,7 +658,6 @@ function populateFilterDropdowns(data) {
   eventSelect.innerHTML = '<option value="ALL">All Events</option>'
     + Array.from(events).sort().map(e => '<option value="' + esc(e) + '">' + esc(e) + '</option>').join("");
 
-  // Age-group counts
   const groupCounts = AGE_GROUPS.map(() => 0);
   let ungrouped = 0;
   data.forEach(item => {
@@ -767,7 +679,6 @@ function populateFilterDropdowns(data) {
   if (Array.from(gradeSelect.options).some(o => o.value === prevGrade)) gradeSelect.value = prevGrade;
 }
 
-/* ---------- grade -> number -> age group ---------- */
 const ROMAN = { i:1, ii:2, iii:3, iv:4, v:5, vi:6, vii:7, viii:8, ix:9, x:10, xi:11, xii:12 };
 function gradeNumber(g) {
   if (!g || g === "—") return null;
@@ -882,9 +793,9 @@ function renderTable(records, allowRevert) {
 
     let action;
     if (isDupe) {
-      action = '<button class="btn btn-done" disabled title="Duplicate ID found in sheet">Duplicate ID</button>';
+      action = '<button class="btn btn-done" disabled title="Duplicate ID">Duplicate ID</button>';
     } else if (!hasId) {
-      action = '<button class="btn btn-done" disabled title="Missing ID column">No ID</button>';
+      action = '<button class="btn btn-done" disabled title="Missing ID">No ID</button>';
     } else if (!isPaid) {
       action = '<button class="btn btn-pay" data-id="' + esc(recId) + '" data-target="Paid">Mark Paid</button>';
     } else if (allowRevert) {
@@ -902,7 +813,7 @@ function renderTable(records, allowRevert) {
       + '<td><span class="amount-tag">' + esc(calculateAmount(row)) + '</span></td>'
       + '<td><span class="badge ' + (isPaid ? "badge-paid" : "badge-pending") + '">'
           + (isPaid ? "Payment Done" : "Pending") + '</span>'
-          + (unsynced ? '<span class="sync-note">⚠ ' + esc(row.syncNote || "not saved to sheet") + '</span>' : '')
+          + (unsynced ? '<span class="sync-note">⚠ ' + esc(row.syncNote || "not saved to database") + '</span>' : '')
         + '</td>'
       + '<td>' + action + '</td>'
       + '</tr>';
@@ -910,7 +821,7 @@ function renderTable(records, allowRevert) {
 }
 
 /* =====================================================================
-   WRITE HANDLERS
+   WRITE HANDLERS (Supabase REST API)
    ===================================================================== */
 let verifyTimer = null;
 function scheduleVerify() {
@@ -920,31 +831,24 @@ function scheduleVerify() {
 
 function postStatus(id, targetStatus) {
   return fetch(REGISTRATION_API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    redirect: "follow",
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      action: "updateRegistration",
-      Username: id,
       id: id,
-      ID: id,
-      PaymentStatus: targetStatus,
-      "Payment Status": targetStatus,
-      Status: targetStatus
+      PaymentStatus: targetStatus
     })
   })
-  .then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text: text })))
-  .then(resp => {
-    if (!resp.ok) throw new Error("HTTP " + resp.status);
-    let parsed = null;
-    try { parsed = JSON.parse(resp.text); } catch (e) {}
-    if (parsed && (parsed.success === true || parsed.status === "success" || parsed.result === "success")) {
-      let regs = null;
-      try { regs = extractRows(parsed).rows; } catch (e) { regs = null; }
-      return { ok: true, note: "sheet accepted the update", registrations: regs && regs.length ? regs : null };
+  .then(async res => {
+    const text = await res.text();
+    let parsed = {};
+    try { parsed = JSON.parse(text); } catch (e) {}
+    if (res.ok || parsed.success) {
+      return { ok: true, note: "database updated successfully" };
     }
-    if (parsed) return { ok: false, note: "backend error: " + (parsed.error || resp.text.slice(0, 120)) };
-    return { ok: false, note: "backend returned non-JSON: " + resp.text.slice(0, 120) };
+    return { ok: false, note: parsed.error || text.slice(0, 100) };
+  })
+  .catch(err => {
+    return { ok: false, note: err.message };
   });
 }
 
@@ -964,22 +868,13 @@ function togglePayment(id, targetStatus, btn) {
       markWriteResult(id, r.ok, r.note);
       lastPostNote = (r.ok ? "OK: " : "FAILED: ") + r.note;
       document.getElementById("dPost").textContent = lastPostNote;
-
-      if (r.ok && r.registrations) {
-        rawRegistrations = reconcile(r.registrations);
-        calculateCollections(rawRegistrations);
-        applyFilterAndSort();
-      } else {
-        // Keep the queue entry until a fresh GET confirms the sheet really changed
-        scheduleVerify();
-      }
+      scheduleVerify();
     })
     .catch(err => {
-      const msg = explainFetchError(err);
-      markWriteResult(id, false, msg);
-      lastPostNote = "FAILED: " + msg;
+      markWriteResult(id, false, err.message);
+      lastPostNote = "FAILED: " + err.message;
       document.getElementById("dPost").textContent = lastPostNote;
-      setDiag("fail", "The sheet write failed.", { dPost: lastPostNote });
+      setDiag("fail", "Database write failed.", { dPost: lastPostNote });
       openDiag();
       rawRegistrations = reconcile(rawRegistrations);
       applyFilterAndSort();
@@ -996,7 +891,7 @@ function retryUnsynced() {
   Promise.all(ids.map(id =>
     postStatus(id, p[id].status)
       .then(r => markWriteResult(id, r.ok, r.note))
-      .catch(e => markWriteResult(id, false, explainFetchError(e)))
+      .catch(e => markWriteResult(id, false, e.message))
   )).then(() => {
     btn.disabled = false; btn.textContent = "⟳ Retry unconfirmed writes";
     loadRegistrations({ silent: true });
@@ -1005,7 +900,7 @@ function retryUnsynced() {
 
 function discardLocal() {
   const n = Object.keys(getPending()).length;
-  if (!confirm("Discard " + n + " unsaved local change(s) and show exactly what the sheet has?")) return;
+  if (!confirm("Discard " + n + " unsaved local change(s) and reload from database?")) return;
   lsRemove(PENDING_KEY);
   loadRegistrations();
 }
