@@ -6,7 +6,6 @@ import { supabase } from '../lib/supabaseClient.js';
  */
 
 export async function handleGetRegistrations(req, res) {
-  // Default to 'registrations' if 'action' parameter is omitted
   const action = req.query.action || 'registrations';
 
   try {
@@ -17,7 +16,6 @@ export async function handleGetRegistrations(req, res) {
 
       if (error) throw error;
 
-      // Safely map properties supporting both uppercase and lowercase Supabase schemas
       const formattedData = (data || []).map(row => ({
         ID: row.ID || row.id || row.Username || '—',
         Name: row.Name || row.name || '—',
@@ -32,7 +30,6 @@ export async function handleGetRegistrations(req, res) {
     }
 
     if (action === 'participants') {
-      // Fetch paid participants for public competitor roster
       const { data, error } = await supabase
         .from('registrations')
         .select('*')
@@ -59,7 +56,12 @@ export async function handleGetRegistrations(req, res) {
 
 export async function handleCreateRegistration(req, res) {
   try {
-    const body = req.body || {};
+    // Safely parse body if sent as text/plain or string
+    let body = req.body || {};
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch (e) { body = {}; }
+    }
+
     const name = String(body.name || body.Name || '').trim();
     const grade = String(body.grade || body.Grade || '').trim();
     const events = String(body.events || body.Events || '').trim();
@@ -91,7 +93,6 @@ export async function handleCreateRegistration(req, res) {
     const competitorId = `FKS-${randomIdNum}`;
     const timestamp = new Date().toISOString();
 
-    // Insert new registration record
     const { data, error } = await supabase
       .from('registrations')
       .insert([
@@ -129,7 +130,11 @@ export async function handleCreateRegistration(req, res) {
 
 export async function handleUpdateRegistration(req, res) {
   try {
-    const body = req.body || {};
+    let body = req.body || {};
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch (e) { body = {}; }
+    }
+
     const id = String(body.id || body.ID || body.Username || '').trim();
     const status = String(body.PaymentStatus || body['Payment Status'] || body.Status || body.payment_status || '').trim();
 
@@ -143,7 +148,6 @@ export async function handleUpdateRegistration(req, res) {
 
     const formattedStatus = status.toLowerCase() === 'paid' ? 'Paid' : 'Pending';
 
-    // Update status in Supabase (checking both id and ID column variants)
     const { data, error } = await supabase
       .from('registrations')
       .update({ 
@@ -159,7 +163,6 @@ export async function handleUpdateRegistration(req, res) {
       return res.status(404).json({ success: false, error: `Competitor ID not found: ${id}` });
     }
 
-    // Return refreshed registrations list for the admin panel
     const { data: allRegistrations, error: fetchErr } = await supabase
       .from('registrations')
       .select('*');
@@ -188,7 +191,6 @@ export async function handleUpdateRegistration(req, res) {
 }
 
 export default async function handler(req, res) {
-  // CORS Configuration
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -206,4 +208,20 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const
+    let body = req.body || {};
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch (e) { body = {}; }
+    }
+
+    const action = body?.action;
+    
+    if (action === 'updateRegistration' || body?.PaymentStatus) {
+      return handleUpdateRegistration(req, res);
+    }
+    
+    return handleCreateRegistration(req, res);
+  }
+
+  res.setHeader('Allow', ['GET', 'POST', 'PATCH']);
+  return res.status(405).end(`Method ${req.method} Not Allowed`);
+}
