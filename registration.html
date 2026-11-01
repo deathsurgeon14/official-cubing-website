@@ -182,7 +182,7 @@
   <div class="eyebrow"><span class="eyebrow-dot"></span> Saturday, October 3, 2026</div>
   <h1>Register</h1>
   <p>Pick a grade, choose your events, and you're in. Fees adjust automatically below.<br>
-  Please also feel free to volunteer to make this event a sucess.</p>
+  Please also feel free to volunteer to make this event a success.</p>
 </header>
 <section class="form-section wrap">
   <div class="card">
@@ -253,6 +253,7 @@
   const feeAmountInput = document.getElementById('fee-amount-input');
   const statusMsg = document.getElementById('status-msg');
 
+  // Vercel Serverless Function Endpoint
   const REGISTRATION_API_URL = '/api/registrations';
 
   const FEE_TABLE = { 1: 100, 2: 200, 3: 250, 4: 300, 5: 350 };
@@ -319,7 +320,7 @@
   }
 
   // Form submission handler
-  form.addEventListener('submit', function(e) {
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const selectedEvents = Array.from(document.querySelectorAll('.event-check.selected'))
@@ -328,68 +329,60 @@
     const calculatedTotal = FEE_TABLE[selectedEvents.length] || 0;
 
     const payload = {
-      action: "register",
       name: nameInput.value.trim(),
       grade: `Grade ${selectedGrade}`,
       events: selectedEvents.join(', '),
-      totalFee: calculatedTotal,
-      fee: calculatedTotal
+      totalFee: calculatedTotal
     };
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Submitting...";
     
-    // Hide and reset status message prior to request
     statusMsg.style.display = "none";
     statusMsg.className = "status-msg";
 
-    fetch(REGISTRATION_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-      // 1. Check for Duplicate Registration
-      if (data.duplicate) {
-        statusMsg.textContent = data.error;
-        statusMsg.className = "status-msg error";
-        statusMsg.style.display = "block";
-      } 
-      // 2. Successful Registration
-      else if (data.success || data.status === "success") {
-        const registrationId = data.id || data.username || "N/A";
+    try {
+      const response = await fetch(REGISTRATION_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
-        statusMsg.innerHTML = `Registration submitted successfully! Your Registration ID is <strong>${registrationId}</strong>. See you at FKS Cubing Open 2026.`;
-        statusMsg.className = "status-msg success";
-        statusMsg.style.display = "block";
+      const data = await response.json();
 
-        // Clear form state
-        form.reset();
-        selectedGrade = null;
-        gradePills.forEach(p => p.classList.remove('selected'));
-        eventChecks.forEach(c => {
-          c.classList.remove('selected');
-          c.classList.remove('disabled');
-        });
-        updateFeeSummary(0);
-      } 
-      // 3. Other Errors
-      else {
-        throw new Error(data.error || "Submission failed");
+      if (!response.ok || data.error || data.success === false) {
+        if (response.status === 409 || (data.error && data.error.toLowerCase().includes('duplicate'))) {
+          throw new Error(data.error || "This registration already exists.");
+        }
+        throw new Error(data.error || data.message || "Submission failed");
       }
-    })
-    .catch(err => {
+
+      const registrationId = data.id || data.username || data.registrationId || "Confirmed";
+
+      statusMsg.innerHTML = `Registration submitted successfully! Your Registration ID is <strong>${registrationId}</strong>. See you at FKS Cubing Open 2026.`;
+      statusMsg.className = "status-msg success";
+      statusMsg.style.display = "block";
+
+      // Clear form state
+      form.reset();
+      selectedGrade = null;
+      gradePills.forEach(p => p.classList.remove('selected'));
+      eventChecks.forEach(c => {
+        c.classList.remove('selected');
+        c.classList.remove('disabled');
+      });
+      updateFeeSummary(0);
+
+    } catch (err) {
       console.error("Registration error:", err);
-      statusMsg.textContent = "There was an error submitting your registration. Please try again.";
+      statusMsg.textContent = err.message || "There was an error submitting your registration. Please try again.";
       statusMsg.className = "status-msg error";
       statusMsg.style.display = "block";
-    })
-    .finally(() => {
+    } finally {
       submitBtn.textContent = "Submit Registration";
-    });
+    }
   });
 
   // Tutorial Positioning & Visibility Logic
@@ -416,7 +409,6 @@
     const volunteerLink = document.getElementById('volunteerLink');
     const closeBtn = document.getElementById('closeTutorialBtn');
 
-    // Show tutorial after brief delay
     setTimeout(() => {
       positionTutorial();
       volunteerLink.classList.add('volunteer-highlight');
