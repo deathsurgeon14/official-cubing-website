@@ -17,7 +17,7 @@ export async function handleGetRegistrations(req, res) {
       if (error) throw error;
 
       const formattedData = (data || []).map(row => ({
-        ID: row.ID || row.id || row.Username || '—',
+        ID: row.Id || row.ID || row.id || row.Username || '—',
         Name: row.Name || row.name || '—',
         Grade: row.Grade || row.grade || '—',
         Events: row.Events || row.events || '—',
@@ -33,7 +33,7 @@ export async function handleGetRegistrations(req, res) {
       const { data, error } = await supabase
         .from('registrations')
         .select('*')
-        .or('payment_status.ilike.Paid,PaymentStatus.ilike.Paid');
+        .or('PaymentStatus.ilike.Paid,payment_status.ilike.Paid');
 
       if (error) throw error;
 
@@ -41,7 +41,7 @@ export async function handleGetRegistrations(req, res) {
         Name: row.Name || row.name || '—',
         Grade: row.Grade || row.grade || '—',
         Events: row.Events || row.events || '—',
-        CompetitorID: row.ID || row.id || '—'
+        CompetitorID: row.Id || row.ID || row.id || '—'
       }));
 
       return res.status(200).json({ success: true, participants });
@@ -77,8 +77,8 @@ export async function handleCreateRegistration(req, res) {
     const { data: existing } = await supabase
       .from('registrations')
       .select('*')
-      .or(`name.ilike.${name},Name.ilike.${name}`)
-      .or(`grade.ilike.${grade},Grade.ilike.${grade}`);
+      .or(`Name.ilike.${name},name.ilike.${name}`)
+      .or(`Grade.ilike.${grade},grade.ilike.${grade}`);
 
     if (existing && existing.length > 0) {
       return res.status(409).json({
@@ -92,25 +92,26 @@ export async function handleCreateRegistration(req, res) {
     const competitorId = `FKS-${randomIdNum}`;
     const timestamp = new Date().toISOString();
 
-    // Dual-map every column (both lowercase and capitalized keys) to satisfy Supabase schema cache
+    // Strict Title-Case keys matching Supabase schema column names
     const { data, error } = await supabase
       .from('registrations')
       .insert([
         {
-          id: competitorId,
+          Id: competitorId,
           ID: competitorId,
-          name: name,
+          id: competitorId,
           Name: name,
-          grade: grade,
+          name: name,
           Grade: grade,
-          events: events,
+          grade: grade,
           Events: events,
-          fee: fee,
+          events: events,
           Fee: fee,
-          payment_status: 'Pending',
+          fee: fee,
           PaymentStatus: 'Pending',
-          timestamp: timestamp,
-          Timestamp: timestamp
+          payment_status: 'Pending',
+          Timestamp: timestamp,
+          timestamp: timestamp
         }
       ])
       .select();
@@ -148,14 +149,13 @@ export async function handleUpdateRegistration(req, res) {
 
     const formattedStatus = status.toLowerCase() === 'paid' ? 'Paid' : 'Pending';
 
-    // Dual-map payment status updates as well
     const { data, error } = await supabase
       .from('registrations')
       .update({ 
-        payment_status: formattedStatus,
-        PaymentStatus: formattedStatus
+        PaymentStatus: formattedStatus,
+        payment_status: formattedStatus
       })
-      .or(`id.ilike.${id},ID.ilike.${id}`)
+      .or(`Id.ilike.${id},ID.ilike.${id},id.ilike.${id}`)
       .select();
 
     if (error) throw error;
@@ -171,7 +171,7 @@ export async function handleUpdateRegistration(req, res) {
     if (fetchErr) throw fetchErr;
 
     const formattedData = (allRegistrations || []).map(row => ({
-      ID: row.ID || row.id || '—',
+      ID: row.Id || row.ID || row.id || '—',
       Name: row.Name || row.name || '—',
       Grade: row.Grade || row.grade || '—',
       Events: row.Events || row.events || '—',
