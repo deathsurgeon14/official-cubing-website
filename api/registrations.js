@@ -56,7 +56,6 @@ export async function handleGetRegistrations(req, res) {
 
 export async function handleCreateRegistration(req, res) {
   try {
-    // Safely parse body if sent as text/plain or string
     let body = req.body || {};
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch (e) { body = {}; }
@@ -93,24 +92,18 @@ export async function handleCreateRegistration(req, res) {
     const competitorId = `FKS-${randomIdNum}`;
     const timestamp = new Date().toISOString();
 
+    // Insert new registration record using lowercase standard schema columns
     const { data, error } = await supabase
       .from('registrations')
       .insert([
         {
           id: competitorId,
-          ID: competitorId,
           name: name,
-          Name: name,
           grade: grade,
-          Grade: grade,
           events: events,
-          Events: events,
           fee: fee,
-          Fee: fee,
           payment_status: 'Pending',
-          PaymentStatus: 'Pending',
-          timestamp: timestamp,
-          Timestamp: timestamp
+          timestamp: timestamp
         }
       ])
       .select();
@@ -151,8 +144,7 @@ export async function handleUpdateRegistration(req, res) {
     const { data, error } = await supabase
       .from('registrations')
       .update({ 
-        payment_status: formattedStatus,
-        PaymentStatus: formattedStatus 
+        payment_status: formattedStatus
       })
       .or(`id.ilike.${id},ID.ilike.${id}`)
       .select();
