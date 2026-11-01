@@ -92,18 +92,25 @@ export async function handleCreateRegistration(req, res) {
     const competitorId = `FKS-${randomIdNum}`;
     const timestamp = new Date().toISOString();
 
-    // Insert new registration record using Supabase table column 'Events' (Capital E)
+    // Dual-map every column (both lowercase and capitalized keys) to satisfy Supabase schema cache
     const { data, error } = await supabase
       .from('registrations')
       .insert([
         {
           id: competitorId,
+          ID: competitorId,
           name: name,
+          Name: name,
           grade: grade,
-          Events: events,       // Matches capitalized column in Supabase
+          Grade: grade,
+          events: events,
+          Events: events,
           fee: fee,
+          Fee: fee,
           payment_status: 'Pending',
-          timestamp: timestamp
+          PaymentStatus: 'Pending',
+          timestamp: timestamp,
+          Timestamp: timestamp
         }
       ])
       .select();
@@ -141,10 +148,12 @@ export async function handleUpdateRegistration(req, res) {
 
     const formattedStatus = status.toLowerCase() === 'paid' ? 'Paid' : 'Pending';
 
+    // Dual-map payment status updates as well
     const { data, error } = await supabase
       .from('registrations')
       .update({ 
-        payment_status: formattedStatus
+        payment_status: formattedStatus,
+        PaymentStatus: formattedStatus
       })
       .or(`id.ilike.${id},ID.ilike.${id}`)
       .select();
