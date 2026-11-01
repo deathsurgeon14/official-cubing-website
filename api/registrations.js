@@ -92,7 +92,7 @@ export async function handleCreateRegistration(req, res) {
     const competitorId = `FKS-${randomIdNum}`;
     const timestamp = new Date().toISOString();
 
-    // Insert new registration record using lowercase standard schema columns
+    // Insert new registration record using Supabase table column 'Events' (Capital E)
     const { data, error } = await supabase
       .from('registrations')
       .insert([
@@ -100,7 +100,7 @@ export async function handleCreateRegistration(req, res) {
           id: competitorId,
           name: name,
           grade: grade,
-          events: events,
+          Events: events,       // Matches capitalized column in Supabase
           fee: fee,
           payment_status: 'Pending',
           timestamp: timestamp
