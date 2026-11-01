@@ -17,7 +17,7 @@ export async function handleGetRegistrations(req, res) {
       if (error) throw error;
 
       const formattedData = (data || []).map(row => ({
-        ID: row.ID || row.Id || row.id || row.Username || '—',
+        ID: row.ID || row.id || row.Username || '—',
         Name: row.Name || row.name || '—',
         Grade: row.Grade || row.grade || '—',
         Events: row.Events || row.events || '—',
@@ -41,7 +41,7 @@ export async function handleGetRegistrations(req, res) {
         Name: row.Name || row.name || '—',
         Grade: row.Grade || row.grade || '—',
         Events: row.Events || row.events || '—',
-        CompetitorID: row.Id || row.ID || row.id || '—'
+        CompetitorID: row.ID || row.id || '—'
       }));
 
       return res.status(200).json({ success: true, participants });
@@ -92,26 +92,18 @@ export async function handleCreateRegistration(req, res) {
     const competitorId = `FKS-${randomIdNum}`;
     const timestamp = new Date().toISOString();
 
-    // Strict Title-Case keys matching Supabase schema column names
+    // Strictly match the exact CSV/Supabase capitalized column schema
     const { data, error } = await supabase
       .from('registrations')
       .insert([
         {
-          Id: competitorId,
           ID: competitorId,
-          id: competitorId,
           Name: name,
-          name: name,
           Grade: grade,
-          grade: grade,
           Events: events,
-          events: events,
           Fee: fee,
-          fee: fee,
           PaymentStatus: 'Pending',
-          payment_status: 'Pending',
-          Timestamp: timestamp,
-          timestamp: timestamp
+          Timestamp: timestamp
         }
       ])
       .select();
@@ -152,10 +144,9 @@ export async function handleUpdateRegistration(req, res) {
     const { data, error } = await supabase
       .from('registrations')
       .update({ 
-        PaymentStatus: formattedStatus,
-        payment_status: formattedStatus
+        PaymentStatus: formattedStatus
       })
-      .or(`Id.ilike.${id},ID.ilike.${id},id.ilike.${id}`)
+      .or(`ID.ilike.${id},id.ilike.${id}`)
       .select();
 
     if (error) throw error;
@@ -171,7 +162,7 @@ export async function handleUpdateRegistration(req, res) {
     if (fetchErr) throw fetchErr;
 
     const formattedData = (allRegistrations || []).map(row => ({
-      ID: row.Id || row.ID || row.id || '—',
+      ID: row.ID || row.id || '—',
       Name: row.Name || row.name || '—',
       Grade: row.Grade || row.grade || '—',
       Events: row.Events || row.events || '—',
