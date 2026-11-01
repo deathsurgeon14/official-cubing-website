@@ -17,7 +17,7 @@ export async function handleGetRegistrations(req, res) {
       if (error) throw error;
 
       const formattedData = (data || []).map(row => ({
-        ID: row.Id || row.ID || row.id || row.Username || '—',
+        ID: row.ID || row.Id || row.id || row.Username || '—',
         Name: row.Name || row.name || '—',
         Grade: row.Grade || row.grade || '—',
         Events: row.Events || row.events || '—',
