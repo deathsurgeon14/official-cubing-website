@@ -70,106 +70,19 @@
   .submit-row{margin-top:24px;}
   .submit-row .btn{width:100%;justify-content:center;padding:13px;font-size:15px;}
   .status-msg{margin-top:16px;font-size:13.5px;padding:12px 14px;border-radius:10px;display:none;}
-  .status-msg.success{display:block;background:rgba(30,142,90,0.1);color:var(--cube-green);}
   .status-msg.error{display:block;background:rgba(230,64,42,0.1);color:var(--cube-red);}
   .hint{font-size:12.5px;color:var(--text-dim);margin-top:6px;}
   footer{background:var(--ink);color:rgba(246,244,239,0.65);padding:40px 0;font-size:13px;}
   .footer-inner{max-width:1120px;margin:0 auto;padding:0 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
   footer .logo{color:var(--paper);}
   footer .logo-mark{filter:brightness(0) invert(1);}
-
-  /* TUTORIAL OVERLAY STYLES */
-  .tutorial-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(18, 23, 43, 0.75);
-    z-index: 1000;
-    display: flex;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  .tutorial-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .tutorial-box {
-    position: absolute;
-    background: #fff;
-    color: var(--ink);
-    padding: 18px 22px;
-    border-radius: 12px;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
-    max-width: 280px;
-    z-index: 1002;
-  }
-  .tutorial-box::before {
-    content: '';
-    position: absolute;
-    top: -8px;
-    right: 24px;
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 8px solid #fff;
-  }
-  .tutorial-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    margin-bottom: 6px;
-  }
-  .tutorial-text {
-    font-size: 13.5px;
-    color: var(--text-dim);
-    margin-bottom: 14px;
-    line-height: 1.4;
-  }
-  .tutorial-actions {
-    display: flex;
-    justify-content: flex-end;
-  }
-  .tutorial-btn-close {
-    background: var(--ink);
-    color: var(--paper);
-    border: none;
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .volunteer-highlight {
-    position: relative;
-    z-index: 1001 !important;
-    background: #fff;
-    padding: 6px 12px;
-    border-radius: 8px;
-    box-shadow: 0 0 0 4px var(--cube-yellow);
-  }
 </style>
 </head>
 <body>
 
-<!-- Tutorial Overlay Container -->
-<div class="tutorial-overlay" id="tutorialOverlay">
-  <div class="tutorial-box" id="tutorialBox">
-    <div class="tutorial-title">Want to help out?</div>
-    <div class="tutorial-text">Click here to volunteer and make this event a success!</div>
-    <div class="tutorial-actions">
-      <button class="tutorial-btn-close" id="closeTutorialBtn">Got it</button>
-    </div>
-  </div>
-</div>
-
 <nav>
   <div class="nav-inner">
-    <a href="#" class="logo">
+    <a href="index.html" class="logo">
      <img src="FKS Logo.png" class="logo-mark"> <span>FKS Cubing Open 2026</span>
     </a>
     <div class="nav-links">
@@ -178,18 +91,19 @@
     </div>
   </div>
 </nav>
+
 <header class="page-header">
-  <div class="eyebrow"><span class="eyebrow-dot"></span> Saturday, October 3, 2026</div>
-  <h1>Register</h1>
-  <p>Pick a grade, choose your events, and you're in. Fees adjust automatically below.<br>
-  Please also feel free to volunteer to make this event a success.</p>
+  <div class="eyebrow"><span class="eyebrow-dot"></span> Registrations Closed</div>
+  <h1>Registration</h1>
+  <p>Thank you for your interest! The FKS Cubing Open 2026 registration period has ended.</p>
 </header>
+
 <section class="form-section wrap">
   <div class="card">
     <form id="reg-form">
       <div class="field">
         <label for="name">Full Name</label>
-        <input type="text" id="name" name="name" placeholder="e.g. Aarav Mehta" required>
+        <input type="text" id="name" name="name" placeholder="e.g. Aarav Mehta">
       </div>
       <div class="field">
         <label>Grade</label>
@@ -200,7 +114,6 @@
           <div class="radio-pill" data-grade="8">Grade 8</div>
           <div class="radio-pill" data-grade="9">Grade 9</div>
         </div>
-        <div class="hint">Megaminx and 4x4 are only open to Grades 7, 8 &amp; 9.</div>
       </div>
       <div class="field">
         <label>Events</label>
@@ -217,24 +130,21 @@
           <div class="event-check" data-event="megaminx" style="--e-color:var(--cube-green);">
             <span class="event-dot"></span><span class="name">Megaminx</span><span class="check-icon"></span>
           </div>
-            <div class="event-check" data-event="4x4" style="--e-color:var(--cube-orange);">
+          <div class="event-check" data-event="4x4" style="--e-color:var(--cube-orange);">
             <span class="event-dot"></span><span class="name">4x4</span><span class="check-icon"></span>
-           </div>
+          </div>
         </div>
       </div>
-      <div class="fee-summary">
-        <span class="label" id="fee-label">Select at least one event</span>
-        <span class="amount" id="fee-amount">₹0</span>
-      </div>
-      <div class="fee-tiers">1 event: ₹100 &nbsp;·&nbsp; 2 events: ₹200 &nbsp;·&nbsp; 3 events: ₹250 &nbsp;·&nbsp; 4 events: ₹300 &nbsp;·&nbsp; 5 events: ₹350</div>
-      <input type="hidden" id="fee-amount-input" name="feeAmount" value="0">
       <div class="submit-row">
-        <button type="submit" class="btn btn-solid-red" id="submit-btn" disabled>Submit Registration</button>
+        <button type="submit" class="btn btn-solid-red" id="submit-btn">Submit Registration</button>
       </div>
-      <div class="status-msg" id="status-msg"></div>
+      <div class="status-msg error" id="status-msg">
+        Sorry, the registrations are closed. Wait until the next event comes.
+      </div>
     </form>
   </div>
 </section>
+
 <footer>
   <div class="footer-inner">
     <div class="logo"><img class="logo-mark" src="FKS Logo.png"></div>
@@ -242,185 +152,13 @@
 </footer>
 
 <script>
-  let selectedGrade = null;
   const form = document.getElementById('reg-form');
-  const nameInput = document.getElementById('name');
-  const gradePills = document.querySelectorAll('.radio-pill');
-  const eventChecks = document.querySelectorAll('.event-check');
-  const submitBtn = document.getElementById('submit-btn');
-  const feeLabel = document.getElementById('fee-label');
-  const feeAmount = document.getElementById('fee-amount');
-  const feeAmountInput = document.getElementById('fee-amount-input');
   const statusMsg = document.getElementById('status-msg');
 
-  // Vercel Serverless Function Endpoint
-  const REGISTRATION_API_URL = '/api/registrations';
-
-  const FEE_TABLE = { 1: 100, 2: 200, 3: 250, 4: 300, 5: 350 };
-
-  // Grade Selection Logic
-  gradePills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      gradePills.forEach(p => p.classList.remove('selected'));
-      pill.classList.add('selected');
-      selectedGrade = pill.getAttribute('data-grade');
-      updateEventRestrictions();
-      checkFormValidity();
-    });
-  });
-
-  // Event Selection Logic
-  eventChecks.forEach(check => {
-    check.addEventListener('click', () => {
-      if (check.classList.contains('disabled')) return;
-
-      check.classList.toggle('selected');
-      checkFormValidity();
-    });
-  });
-
-  // Restrict events based on selected grade
-  function updateEventRestrictions() {
-    eventChecks.forEach(check => {
-      const eventType = check.getAttribute('data-event');
-
-      if (eventType === 'megaminx' || eventType === '4x4') {
-        if (selectedGrade === '5' || selectedGrade === '6') {
-          check.classList.add('disabled');
-          check.classList.remove('selected');
-        } else {
-          check.classList.remove('disabled');
-        }
-      }
-    });
-  }
-
-  // Recomputes the fee box from how many events are currently selected
-  function updateFeeSummary(selectedEventCount) {
-    if (selectedEventCount === 0) {
-      feeLabel.innerText = 'Select at least one event';
-      feeAmount.innerText = '₹0';
-      feeAmountInput.value = '0';
-      return 0;
-    }
-    const fee = FEE_TABLE[selectedEventCount] || 0;
-    feeLabel.innerText = `${selectedEventCount} event${selectedEventCount > 1 ? 's' : ''} selected`;
-    feeAmount.innerText = `₹${fee}`;
-    feeAmountInput.value = String(fee);
-    return fee;
-  }
-
-  // Validate form and activate submit button
-  function checkFormValidity() {
-    const hasSelectedGrade = selectedGrade !== null;
-    const selectedEventCount = document.querySelectorAll('.event-check.selected').length;
-
-    updateFeeSummary(selectedEventCount);
-    submitBtn.disabled = !(hasSelectedGrade && selectedEventCount > 0);
-  }
-
-  // Form submission handler
-  form.addEventListener('submit', async function(e) {
+  // Display notice on form submission attempt
+  form.addEventListener('submit', function(e) {
     e.preventDefault();
-
-    const selectedEvents = Array.from(document.querySelectorAll('.event-check.selected'))
-      .map(el => el.getAttribute('data-event'));
-
-    const calculatedTotal = FEE_TABLE[selectedEvents.length] || 0;
-
-    const payload = {
-      name: nameInput.value.trim(),
-      grade: `Grade ${selectedGrade}`,
-      events: selectedEvents.join(', '),
-      totalFee: calculatedTotal
-    };
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Submitting...";
-    
-    statusMsg.style.display = "none";
-    statusMsg.className = "status-msg";
-
-    try {
-      const response = await fetch(REGISTRATION_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.error || data.success === false) {
-        if (response.status === 409 || (data.error && data.error.toLowerCase().includes('duplicate'))) {
-          throw new Error(data.error || "This registration already exists.");
-        }
-        throw new Error(data.error || data.message || "Submission failed");
-      }
-
-      const registrationId = data.id || data.username || data.registrationId || "Confirmed";
-
-      statusMsg.innerHTML = `Registration submitted successfully! Your Registration ID is <strong>${registrationId}</strong>. See you at FKS Cubing Open 2026.`;
-      statusMsg.className = "status-msg success";
-      statusMsg.style.display = "block";
-
-      // Clear form state
-      form.reset();
-      selectedGrade = null;
-      gradePills.forEach(p => p.classList.remove('selected'));
-      eventChecks.forEach(c => {
-        c.classList.remove('selected');
-        c.classList.remove('disabled');
-      });
-      updateFeeSummary(0);
-
-    } catch (err) {
-      console.error("Registration error:", err);
-      statusMsg.textContent = err.message || "There was an error submitting your registration. Please try again.";
-      statusMsg.className = "status-msg error";
-      statusMsg.style.display = "block";
-    } finally {
-      submitBtn.textContent = "Submit Registration";
-    }
-  });
-
-  // Tutorial Positioning & Visibility Logic
-  function positionTutorial() {
-    const volunteerLink = document.getElementById('volunteerLink');
-    const tutorialBox = document.getElementById('tutorialBox');
-    
-    if (volunteerLink && tutorialBox) {
-      const rect = volunteerLink.getBoundingClientRect();
-      tutorialBox.style.top = `${rect.bottom + 12}px`;
-      tutorialBox.style.left = `${rect.left + (rect.width / 2) - 230}px`;
-    }
-  }
-
-  function dismissTutorial() {
-    const overlay = document.getElementById('tutorialOverlay');
-    const volunteerLink = document.getElementById('volunteerLink');
-    overlay.classList.remove('active');
-    volunteerLink.classList.remove('volunteer-highlight');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const overlay = document.getElementById('tutorialOverlay');
-    const volunteerLink = document.getElementById('volunteerLink');
-    const closeBtn = document.getElementById('closeTutorialBtn');
-
-    setTimeout(() => {
-      positionTutorial();
-      volunteerLink.classList.add('volunteer-highlight');
-      overlay.classList.add('active');
-    }, 400);
-
-    closeBtn.addEventListener('click', dismissTutorial);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) dismissTutorial();
-    });
-
-    window.addEventListener('resize', positionTutorial);
+    statusMsg.style.display = 'block';
   });
 </script>
 
